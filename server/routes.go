@@ -6,8 +6,13 @@ import (
 
 func InitRoutes() {
 	router := gin.Default()
-	router.GET("/api/contacts", GetAllContacts)
-	router.POST("/api/contacts", CreateContact)
+
+	api := router.Group("/api")
+	{
+		api.GET("/contacts", GetAllContacts)
+		api.POST("/contacts", CreateContact)
+		api.DELETE("/contacts/:id", DeleteContact)
+	}
 
 	router.Run("localhost:9000")
 }

@@ -139,5 +139,21 @@ func CreateContact(c *gin.Context) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusCreated, newContact)
+	c.IndentedJSON(http.StatusCreated, contactId)
+}
+
+func DeleteContact(c *gin.Context) {
+	db := setup.GetDBConn()
+
+	id := c.Param("id")
+
+	const query string = "DELETE FROM contacts WHERE contact_id = ?"
+
+	_, err := db.Exec(query, id)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, nil)
 }
