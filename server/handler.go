@@ -2,7 +2,6 @@ package server
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
 	"phonebook/setup"
 
@@ -35,10 +34,9 @@ type Contact struct {
 func GetAllContacts(c *gin.Context) {
 	db := setup.GetDBConn()
 
-	rows, err := db.Query("SELECT DISTINCT * FROM contacts LEFT JOIN addresses USING (contact_id) LEFT JOIN phones USING (contact_id)")
+	rows, err := db.Query("SELECT * FROM contacts LEFT JOIN addresses USING (contact_id) LEFT JOIN phones USING (contact_id)")
 	defer rows.Close()
 
-	// var contacts []Contact
 	contacts := make(map[int]Contact)
 	phones := make(map[sql.NullInt32]bool)
 	addresses := make(map[sql.NullInt32]bool)
@@ -52,7 +50,6 @@ func GetAllContacts(c *gin.Context) {
 			&address.AddressID, &address.Description, &address.City, &address.Street,
 			&address.HomeNumber, &address.Apartment,
 			&phone.PhoneId, &phone.Description, &phone.PhoneNumber); err != nil {
-			fmt.Println(err)
 			c.IndentedJSON(http.StatusInternalServerError, contacts)
 		}
 		if val, ok := contacts[contact.ID]; ok {
@@ -66,8 +63,12 @@ func GetAllContacts(c *gin.Context) {
 			}
 			contacts[contact.ID] = val
 		} else {
-			contact.Address = append(contact.Address, address)
-			contact.Phone = append(contact.Phone, phone)
+			if address.AddressID.Valid == true {
+				contact.Address = append(contact.Address, address)
+			}
+			if phone.PhoneId.Valid == true {
+				contact.Phone = append(contact.Phone, phone)
+			}
 			contacts[contact.ID] = contact
 			phones[phone.PhoneId] = true
 			addresses[address.AddressID] = true
@@ -77,7 +78,10 @@ func GetAllContacts(c *gin.Context) {
 	if err = rows.Err(); err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, contacts)
 	}
-	fmt.Println(contacts)
 
 	c.IndentedJSON(http.StatusOK, contacts)
+}
+
+func GetContact(c *gin.Context) {
+
 }
