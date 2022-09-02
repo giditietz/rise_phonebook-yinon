@@ -33,8 +33,9 @@ type Contact struct {
 
 func GetAllContacts(c *gin.Context) {
 	db := setup.GetDBConn()
+	const query string = "SELECT * FROM contacts LEFT JOIN addresses USING (contact_id) LEFT JOIN phones USING (contact_id)"
 
-	rows, err := db.Query("SELECT * FROM contacts LEFT JOIN addresses USING (contact_id) LEFT JOIN phones USING (contact_id)")
+	rows, err := db.Query(query)
 	defer rows.Close()
 
 	contacts := make(map[int]Contact)
@@ -82,6 +83,20 @@ func GetAllContacts(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, contacts)
 }
 
-func GetContact(c *gin.Context) {
+type ContactRequestBody struct {
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+}
 
+func CreateContact(c *gin.Context) {
+	db := setup.GetDBConn()
+	var newContact ContactRequestBody
+
+	if err := c.BindJSON(&newContact); err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, err)
+	}
+
+	const query string = "INSERT INTO contacts(first_name, last_name) VALUES (?, ?);"
+
+	db.Exec(query, newContact.FirstName, newContact.LastName)
 }

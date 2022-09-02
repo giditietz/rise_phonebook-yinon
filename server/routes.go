@@ -7,7 +7,7 @@ import (
 func InitRoutes() {
 	router := gin.Default()
 	router.GET("/api/contacts", GetAllContacts)
-	router.GET("/api/contacts/:id", GetContact)
+	router.POST("/api/contacts", CreateContact)
 
 	router.Run("localhost:9000")
 }
