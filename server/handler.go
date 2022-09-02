@@ -31,6 +31,28 @@ type Contact struct {
 	Phone     []Phone   `json:"Phone"`
 }
 
+type AddressRequestBody struct {
+	ContactId   int    `json:"contact_id"`
+	Description string `json:"description"`
+	City        string `json:"city"`
+	Street      string `json:"street"`
+	HomeNumber  string `json:"home_number"`
+	Apartment   string `json:"apartment"`
+}
+
+type PhoneRequestBody struct {
+	ContactId   int    `json:"contact_id"`
+	Description string `json:"description"`
+	PhoneNumber string `json:"phone_number"`
+}
+
+type ContactRequestBody struct {
+	FirstName  string             `json:"first_name"`
+	LastName   string             `json:"last_name"`
+	AddressReq AddressRequestBody `json:"address"`
+	PhoneReq   PhoneRequestBody   `json:"phone"`
+}
+
 func GetAllContacts(c *gin.Context) {
 	db := setup.GetDBConn()
 	const query string = "SELECT * FROM contacts LEFT JOIN addresses USING (contact_id) LEFT JOIN phones USING (contact_id)"
@@ -83,11 +105,6 @@ func GetAllContacts(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, contacts)
 }
 
-type ContactRequestBody struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-}
-
 func CreateContact(c *gin.Context) {
 	db := setup.GetDBConn()
 	var newContact ContactRequestBody
@@ -96,7 +113,31 @@ func CreateContact(c *gin.Context) {
 		c.IndentedJSON(http.StatusInternalServerError, err)
 	}
 
-	const query string = "INSERT INTO contacts(first_name, last_name) VALUES (?, ?);"
+	const createContactQuery string = "INSERT INTO contacts(first_name, last_name) VALUES (?, ?);"
+	result, err := db.Exec(createContactQuery, newContact.FirstName, newContact.LastName)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, err)
+		return
+	}
 
-	db.Exec(query, newContact.FirstName, newContact.LastName)
+	contactId, err := result.LastInsertId()
+
+	const addAddressQuery string = "INSERT INTO addresses(contact_id, description, city, street, home_number, apartment) VALUES (?, ?, ?, ?, ?, ?)"
+
+	_, err = db.Exec(addAddressQuery, contactId, newContact.AddressReq.Description, newContact.AddressReq.City,
+		newContact.AddressReq.Street, newContact.AddressReq.HomeNumber, newContact.AddressReq.Apartment)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	const addPhoneQuery string = "INSERT INTO phones(contact_id, description, phone_number) VALUES (?, ?, ?)"
+
+	_, err = db.Exec(addPhoneQuery, contactId, newContact.PhoneReq.Description, newContact.PhoneReq.PhoneNumber)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.IndentedJSON(http.StatusCreated, newContact)
 }
