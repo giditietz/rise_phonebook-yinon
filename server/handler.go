@@ -1,6 +1,8 @@
 package server
 
 import (
+	"database/sql"
+	"fmt"
 	"net/http"
 	"phonebook/setup"
 
@@ -8,18 +10,18 @@ import (
 )
 
 type Address struct {
-	AddressID   int    `json:"addressId"`
-	Description string `json:"description"`
-	City        string `json:"city"`
-	Street      string `json:"street"`
-	HomeNumber  string `json:"homeNumber"`
-	Apartment   string `json:"apartment"`
+	AddressID   sql.NullInt32  `json:"addressId"`
+	Description sql.NullString `json:"description"`
+	City        sql.NullString `json:"city"`
+	Street      sql.NullString `json:"street"`
+	HomeNumber  sql.NullString `json:"homeNumber"`
+	Apartment   sql.NullString `json:"apartment"`
 }
 
 type Phone struct {
-	PhoneId     int    `json:"phoneId"`
-	Description string `json:"description"`
-	PhoneNumber string `json:"PhoneNumber"`
+	PhoneId     sql.NullInt32  `json:"phoneId"`
+	Description sql.NullString `json:"description"`
+	PhoneNumber sql.NullString `json:"PhoneNumber"`
 }
 
 type Contact struct {
@@ -33,13 +35,13 @@ type Contact struct {
 func GetAllContacts(c *gin.Context) {
 	db := setup.GetDBConn()
 
-	rows, err := db.Query("SELECT * FROM contacts JOIN addresses USING (contact_id) JOIN phones USING (contact_id)")
+	rows, err := db.Query("SELECT DISTINCT * FROM contacts LEFT JOIN addresses USING (contact_id) LEFT JOIN phones USING (contact_id)")
 	defer rows.Close()
 
 	// var contacts []Contact
 	contacts := make(map[int]Contact)
-	phones := make(map[int]bool)
-	addresses := make(map[int]bool)
+	phones := make(map[sql.NullInt32]bool)
+	addresses := make(map[sql.NullInt32]bool)
 
 	for rows.Next() {
 		var contact Contact
@@ -50,6 +52,7 @@ func GetAllContacts(c *gin.Context) {
 			&address.AddressID, &address.Description, &address.City, &address.Street,
 			&address.HomeNumber, &address.Apartment,
 			&phone.PhoneId, &phone.Description, &phone.PhoneNumber); err != nil {
+			fmt.Println(err)
 			c.IndentedJSON(http.StatusInternalServerError, contacts)
 		}
 		if val, ok := contacts[contact.ID]; ok {
@@ -57,7 +60,7 @@ func GetAllContacts(c *gin.Context) {
 				val.Phone = append(val.Phone, phone)
 				phones[phone.PhoneId] = true
 			}
-			if _, ok := phones[address.AddressID]; !ok {
+			if _, ok := addresses[address.AddressID]; !ok {
 				val.Address = append(val.Address, address)
 				addresses[address.AddressID] = true
 			}
@@ -74,6 +77,7 @@ func GetAllContacts(c *gin.Context) {
 	if err = rows.Err(); err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, contacts)
 	}
+	fmt.Println(contacts)
 
 	c.IndentedJSON(http.StatusOK, contacts)
 }
