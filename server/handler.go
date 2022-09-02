@@ -36,7 +36,10 @@ func GetAllContacts(c *gin.Context) {
 	rows, err := db.Query("SELECT * FROM contacts JOIN addresses USING (contact_id) JOIN phones USING (contact_id)")
 	defer rows.Close()
 
-	var contacts []Contact
+	// var contacts []Contact
+	contacts := make(map[int]Contact)
+	phones := make(map[int]bool)
+	addresses := make(map[int]bool)
 
 	for rows.Next() {
 		var contact Contact
@@ -49,9 +52,23 @@ func GetAllContacts(c *gin.Context) {
 			&phone.PhoneId, &phone.Description, &phone.PhoneNumber); err != nil {
 			c.IndentedJSON(http.StatusInternalServerError, contacts)
 		}
-		contact.Address = append(contact.Address, address)
-		contact.Phone = append(contact.Phone, phone)
-		contacts = append(contacts, contact)
+		if val, ok := contacts[contact.ID]; ok {
+			if _, ok := phones[phone.PhoneId]; !ok {
+				val.Phone = append(val.Phone, phone)
+				phones[phone.PhoneId] = true
+			}
+			if _, ok := phones[address.AddressID]; !ok {
+				val.Address = append(val.Address, address)
+				addresses[address.AddressID] = true
+			}
+			contacts[contact.ID] = val
+		} else {
+			contact.Address = append(contact.Address, address)
+			contact.Phone = append(contact.Phone, phone)
+			contacts[contact.ID] = contact
+			phones[phone.PhoneId] = true
+			addresses[address.AddressID] = true
+		}
 	}
 
 	if err = rows.Err(); err != nil {
