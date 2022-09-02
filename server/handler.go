@@ -23,11 +23,11 @@ type Phone struct {
 }
 
 type Contact struct {
-	ID        int     `json:"id"`
-	FirstName string  `json:"firstName"`
-	LastName  string  `json:"lastName"`
-	Address   Address `json:"Address"`
-	Phone     Phone   `json:"Phone"`
+	ID        int       `json:"id"`
+	FirstName string    `json:"firstName"`
+	LastName  string    `json:"lastName"`
+	Address   []Address `json:"Address"`
+	Phone     []Phone   `json:"Phone"`
 }
 
 func GetAllContacts(c *gin.Context) {
@@ -40,13 +40,17 @@ func GetAllContacts(c *gin.Context) {
 
 	for rows.Next() {
 		var contact Contact
+		var address Address
+		var phone Phone
 
 		if err := rows.Scan(&contact.ID, &contact.FirstName, &contact.LastName,
-			&contact.Address.AddressID, &contact.Address.Description, &contact.Address.City, &contact.Address.Street,
-			&contact.Address.HomeNumber, &contact.Address.Apartment,
-			&contact.Phone.PhoneId, &contact.Phone.Description, &contact.Phone.PhoneNumber); err != nil {
+			&address.AddressID, &address.Description, &address.City, &address.Street,
+			&address.HomeNumber, &address.Apartment,
+			&phone.PhoneId, &phone.Description, &phone.PhoneNumber); err != nil {
 			c.IndentedJSON(http.StatusInternalServerError, contacts)
 		}
+		contact.Address = append(contact.Address, address)
+		contact.Phone = append(contact.Phone, phone)
 		contacts = append(contacts, contact)
 	}
 

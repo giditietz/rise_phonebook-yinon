@@ -38,4 +38,5 @@ CREATE TABLE phones (
 
 INSERT INTO contacts VALUES (1, "Yinon", "Yishay");
 INSERT INTO addresses VALUES (1, 1, "Home", "Revava", "bla", "10", "9");
+INSERT INTO addresses VALUES (2, 1, "Work", "Tel Aviv", "bla", "10", "9");
 INSERT INTO phones VALUES (1, 1, "Mobile", "052-8119308")
