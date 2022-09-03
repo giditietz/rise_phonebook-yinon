@@ -2,6 +2,7 @@ package server
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	serverutils "phonebook/server/server_utils"
 	"phonebook/setup"
@@ -20,7 +21,7 @@ type AddressQuery struct {
 	Description sql.NullString `json:"description"`
 	City        sql.NullString `json:"city"`
 	Street      sql.NullString `json:"street"`
-	HomeNumber  sql.NullString `json:"homeNumber"`
+	HomeNumber  sql.NullString `json:"home_number"`
 	Apartment   sql.NullString `json:"apartment"`
 }
 
@@ -31,10 +32,10 @@ type PhoneQuery struct {
 }
 
 type ContactRequestBody struct {
-	FirstName  string             `json:"first_name"`
-	LastName   string             `json:"last_name"`
-	AddressReq AddressRequestBody `json:"address"`
-	PhoneReq   PhoneRequestBody   `json:"phone"`
+	FirstName  string               `json:"first_name"`
+	LastName   string               `json:"last_name"`
+	AddressReq []AddressRequestBody `json:"address"`
+	PhoneReq   []PhoneRequestBody   `json:"phone"`
 }
 
 type AddressRequestBody struct {
@@ -181,23 +182,31 @@ func CreateContact(c *gin.Context) {
 		return
 	}
 
+	newAddresses := newContact.AddressReq
+
+	fmt.Println(newAddresses)
+
 	contactId, err := result.LastInsertId()
 
 	insertAddressQuery, _ := serverutils.GetQuery("insertAddress")
-
-	_, err = db.Exec(insertAddressQuery, contactId, newContact.AddressReq.Description, newContact.AddressReq.City,
-		newContact.AddressReq.Street, newContact.AddressReq.HomeNumber, newContact.AddressReq.Apartment)
-	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, err)
-		return
+	for _, address := range newAddresses {
+		_, err = db.Exec(insertAddressQuery, contactId, address.Description, address.City,
+			address.Street, address.HomeNumber, address.Apartment)
+		if err != nil {
+			c.IndentedJSON(http.StatusInternalServerError, err)
+			return
+		}
 	}
 
-	insertPhoneQuery, _ := serverutils.GetQuery("insertPhone")
+	newPhones := newContact.PhoneReq
 
-	_, err = db.Exec(insertPhoneQuery, contactId, newContact.PhoneReq.Description, newContact.PhoneReq.PhoneNumber)
-	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, err)
-		return
+	insertPhoneQuery, _ := serverutils.GetQuery("insertPhone")
+	for _, phone := range newPhones {
+		_, err = db.Exec(insertPhoneQuery, contactId, phone.Description, phone.PhoneNumber)
+		if err != nil {
+			c.IndentedJSON(http.StatusInternalServerError, err)
+			return
+		}
 	}
 
 	c.IndentedJSON(http.StatusCreated, contactId)
@@ -220,38 +229,38 @@ func DeleteContact(c *gin.Context) {
 }
 
 func EditContact(c *gin.Context) {
-	db := setup.GetDBConn()
-	var newContact ContactRequestBody
+	// db := setup.GetDBConn()
+	// var newContact ContactRequestBody
 
-	if err := c.BindJSON(&newContact); err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, err)
-	}
+	// if err := c.BindJSON(&newContact); err != nil {
+	// 	c.IndentedJSON(http.StatusInternalServerError, err)
+	// }
 
-	const createContactQuery string = "REPLACE INTO contacts(first_name, last_name) VALUES (?, ?);"
-	result, err := db.Exec(createContactQuery, newContact.FirstName, newContact.LastName)
-	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, err)
-		return
-	}
+	// const createContactQuery string = "REPLACE INTO contacts(first_name, last_name) VALUES (?, ?);"
+	// result, err := db.Exec(createContactQuery, newContact.FirstName, newContact.LastName)
+	// if err != nil {
+	// 	c.IndentedJSON(http.StatusInternalServerError, err)
+	// 	return
+	// }
 
-	contactId, err := result.LastInsertId()
+	// contactId, err := result.LastInsertId()
 
-	const addAddressQuery string = "REPLACE INTO addresses(contact_id, description, city, street, home_number, apartment) VALUES (?, ?, ?, ?, ?, ?)"
+	// const addAddressQuery string = "REPLACE INTO addresses(contact_id, description, city, street, home_number, apartment) VALUES (?, ?, ?, ?, ?, ?)"
 
-	_, err = db.Exec(addAddressQuery, contactId, newContact.AddressReq.Description, newContact.AddressReq.City,
-		newContact.AddressReq.Street, newContact.AddressReq.HomeNumber, newContact.AddressReq.Apartment)
-	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, err)
-		return
-	}
+	// _, err = db.Exec(addAddressQuery, contactId, newContact.AddressReq.Description, newContact.AddressReq.City,
+	// 	newContact.AddressReq.Street, newContact.AddressReq.HomeNumber, newContact.AddressReq.Apartment)
+	// if err != nil {
+	// 	c.IndentedJSON(http.StatusInternalServerError, err)
+	// 	return
+	// }
 
-	const addPhoneQuery string = "REPLACE INTO phones(contact_id, description, phone_number) VALUES (?, ?, ?)"
+	// const addPhoneQuery string = "REPLACE INTO phones(contact_id, description, phone_number) VALUES (?, ?, ?)"
 
-	_, err = db.Exec(addPhoneQuery, contactId, newContact.PhoneReq.Description, newContact.PhoneReq.PhoneNumber)
-	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, err)
-		return
-	}
+	// _, err = db.Exec(addPhoneQuery, contactId, newContact.PhoneReq.Description, newContact.PhoneReq.PhoneNumber)
+	// if err != nil {
+	// 	c.IndentedJSON(http.StatusInternalServerError, err)
+	// 	return
+	// }
 
-	c.IndentedJSON(http.StatusCreated, contactId)
+	// c.IndentedJSON(http.StatusCreated, contactId)
 }
