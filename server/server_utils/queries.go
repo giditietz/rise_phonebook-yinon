@@ -34,6 +34,7 @@ var queryMap = map[string]string{
 	"editPhone": `UPDATE phones SET `,
 	"where":     " WHERE ",
 	"limit":     "LIMIT",
+	"and":       " AND ",
 }
 
 func GetQuery(key string) (string, bool) {

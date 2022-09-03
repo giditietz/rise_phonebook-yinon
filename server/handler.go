@@ -79,13 +79,52 @@ type PhoneResponseBody struct {
 	PhoneNumber string `json:"phone_number"`
 }
 
+const (
+	sqlQueryGetAll        = "getAll"
+	sqlQueryWhere         = "where"
+	sqlQueryAnd           = "and"
+	sqlQueryInsertContact = "insertContact"
+	sqlQueryInsertAddress = "insertAddress"
+	sqlQueryInsertPhone   = "insertPhone"
+	sqlQueryDeleteContact = "deleteContact"
+	sqlQueryEditContact   = "editContact"
+	sqlQueryEditPhone     = "editPhone"
+	sqlQueryEditAddress   = "editAddress"
+	sqlSeparatorValues    = ", "
+)
+
+const (
+	ginQueryPage        = "page"
+	ginDefaultPageStart = "0"
+	ginQueryFirstName   = "first_name"
+	ginQueryLastName    = "last_name"
+	ginParamId          = "id"
+)
+
+const (
+	retrieveResultLimit = 10
+)
+
+const (
+	firstNameFieldInDB   = "first_name"
+	lastNameFieldInDB    = "last_name"
+	contactIdFieldInDB   = "contact_id"
+	phoneIdFieldInDB     = "phone_id"
+	addressIdFieldInDB   = "address_id"
+	descriptionFieldInDB = "description"
+	phoneNumberFieldInDB = "phone_number"
+	cityFieldInDB        = "city"
+	streetFieldInDB      = "street"
+	homeNumberFieldInDB  = "home_number"
+	apartmentFieldInDB   = "apartment"
+)
+
 func GetAllContacts(c *gin.Context) {
 	db := setup.GetDBConn()
-	getAllQuery, _ := serverutils.GetQuery("getAll")
-	pageNum, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageNum -= 1
+	getAllQuery, _ := serverutils.GetQuery(sqlQueryGetAll)
+	pageNum, _ := strconv.Atoi(c.DefaultQuery(ginQueryPage, ginDefaultPageStart))
 
-	getAllQuery += serverutils.GetLimitQuery(pageNum*10, 10)
+	getAllQuery += serverutils.GetLimitQuery(pageNum*retrieveResultLimit, retrieveResultLimit)
 	rows, err := db.Query(getAllQuery)
 	defer rows.Close()
 
@@ -129,29 +168,29 @@ func GetAllContacts(c *gin.Context) {
 
 func SearchContact(c *gin.Context) {
 	db := setup.GetDBConn()
-	getSearchQuery, _ := serverutils.GetQuery("getAll")
-	whereQuery, _ := serverutils.GetQuery("where")
+	getSearchQuery, _ := serverutils.GetQuery(sqlQueryGetAll)
+	whereQuery, _ := serverutils.GetQuery(sqlQueryWhere)
+	andQuery, _ := serverutils.GetQuery(sqlQueryAnd)
 	isFirstNameSearch := false
 	isLastNameSearch := false
 
-	firstName, isFirstNameSearch := c.GetQuery("first_name")
+	firstName, isFirstNameSearch := c.GetQuery(ginQueryFirstName)
 	if isFirstNameSearch {
 		getSearchQuery += whereQuery
-		getSearchQuery += serverutils.AddValuesToQuery("first_name", firstName)
+		getSearchQuery += serverutils.AddValuesToQuery(firstNameFieldInDB, firstName)
 	}
-	lastName, isLastNameSearch := c.GetQuery("last_name")
+	lastName, isLastNameSearch := c.GetQuery(ginQueryLastName)
 	if isLastNameSearch {
 		if isFirstNameSearch {
-			getSearchQuery += " AND "
+			getSearchQuery += andQuery
 		} else {
 			getSearchQuery += whereQuery
 		}
-		getSearchQuery += serverutils.AddValuesToQuery("last_name", lastName)
+		getSearchQuery += serverutils.AddValuesToQuery(lastNameFieldInDB, lastName)
 	}
 
-	pageNum, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageNum -= 1
-	getSearchQuery += serverutils.GetLimitQuery(pageNum*10, 10)
+	pageNum, _ := strconv.Atoi(c.DefaultQuery(ginQueryPage, ginDefaultPageStart))
+	getSearchQuery += serverutils.GetLimitQuery(pageNum*retrieveResultLimit, retrieveResultLimit)
 
 	rows, err := db.Query(getSearchQuery)
 	defer rows.Close()
@@ -247,7 +286,7 @@ func CreateContact(c *gin.Context) {
 		c.IndentedJSON(http.StatusInternalServerError, err)
 	}
 
-	insertContactQuery, _ := serverutils.GetQuery("insertContact")
+	insertContactQuery, _ := serverutils.GetQuery(sqlQueryInsertContact)
 
 	result, err := db.Exec(insertContactQuery, newContact.FirstName, newContact.LastName)
 	if err != nil {
@@ -261,7 +300,7 @@ func CreateContact(c *gin.Context) {
 
 	contactID, err := result.LastInsertId()
 
-	insertAddressQuery, _ := serverutils.GetQuery("insertAddress")
+	insertAddressQuery, _ := serverutils.GetQuery(sqlQueryInsertAddress)
 	for _, address := range newAddresses {
 		_, err = db.Exec(insertAddressQuery, contactID, address.Description, address.City,
 			address.Street, address.HomeNumber, address.Apartment)
@@ -273,7 +312,7 @@ func CreateContact(c *gin.Context) {
 
 	newPhones := newContact.PhoneReq
 
-	insertPhoneQuery, _ := serverutils.GetQuery("insertPhone")
+	insertPhoneQuery, _ := serverutils.GetQuery(sqlQueryInsertPhone)
 	for _, phone := range newPhones {
 		_, err = db.Exec(insertPhoneQuery, contactID, phone.Description, phone.PhoneNumber)
 		if err != nil {
@@ -288,9 +327,9 @@ func CreateContact(c *gin.Context) {
 func DeleteContact(c *gin.Context) {
 	db := setup.GetDBConn()
 
-	id := c.Param("id")
+	id := c.Param(ginParamId)
 
-	deleteContactQuery, _ := serverutils.GetQuery("deleteContact")
+	deleteContactQuery, _ := serverutils.GetQuery(sqlQueryDeleteContact)
 
 	_, err := db.Exec(deleteContactQuery, id)
 	if err != nil {
@@ -303,7 +342,7 @@ func DeleteContact(c *gin.Context) {
 
 func EditContact(c *gin.Context) {
 	db := setup.GetDBConn()
-	contactID := c.Param("id")
+	contactID := c.Param(ginParamId)
 
 	var editContact ContactRequestBody
 
@@ -311,15 +350,15 @@ func EditContact(c *gin.Context) {
 		c.IndentedJSON(http.StatusInternalServerError, err)
 	}
 
-	editContactQuery, _ := serverutils.GetQuery("editContact")
+	editContactQuery, _ := serverutils.GetQuery(sqlQueryEditContact)
 	editContactQuery += prepareContactUpdateQuery(&editContact)
-	editContactQuery += getWhereCond("contact_id", contactID)
+	editContactQuery += getWhereCond(contactIdFieldInDB, contactID)
 
 	db.Exec(editContactQuery)
 
 	for _, phone := range editContact.PhoneReq {
 		if !isPhoneExist(&phone) {
-			insertPhoneQuery, _ := serverutils.GetQuery("insertPhone")
+			insertPhoneQuery, _ := serverutils.GetQuery(sqlQueryInsertPhone)
 			_, err := db.Exec(insertPhoneQuery, contactID, phone.Description, phone.PhoneNumber)
 			if err != nil {
 				c.IndentedJSON(http.StatusInternalServerError, err)
@@ -327,7 +366,7 @@ func EditContact(c *gin.Context) {
 			}
 		} else {
 			editPhoneQuery := preparePhoneUpdateQuery(&phone)
-			editPhoneQuery += getWhereCond("phone_id", fmt.Sprintf("%d", phone.PhoneID))
+			editPhoneQuery += getWhereCond(phoneIdFieldInDB, fmt.Sprintf("%d", phone.PhoneID))
 			_, err := db.Exec(editPhoneQuery)
 			if err != nil {
 				c.IndentedJSON(http.StatusInternalServerError, err)
@@ -338,7 +377,7 @@ func EditContact(c *gin.Context) {
 
 	for _, address := range editContact.AddressReq {
 		if !isAddressExist(&address) {
-			insertAddressQuery, _ := serverutils.GetQuery("insertAddress")
+			insertAddressQuery, _ := serverutils.GetQuery(sqlQueryInsertAddress)
 			_, err := db.Exec(insertAddressQuery, contactID, address.Description,
 				address.City, address.Street,
 				address.HomeNumber, address.Apartment)
@@ -348,7 +387,7 @@ func EditContact(c *gin.Context) {
 			}
 		} else {
 			editAddressQuery := prepareAddressUpdateQuery(&address)
-			editAddressQuery += getWhereCond("address_id", fmt.Sprintf("%d", address.AddressID))
+			editAddressQuery += getWhereCond(addressIdFieldInDB, fmt.Sprintf("%d", address.AddressID))
 			_, err := db.Exec(editAddressQuery)
 			if err != nil {
 				c.IndentedJSON(http.StatusInternalServerError, err)
@@ -362,12 +401,18 @@ func EditContact(c *gin.Context) {
 
 func prepareContactUpdateQuery(contact *ContactRequestBody) string {
 	var ret string
+	var isSeparatorNeeded bool
 	if contact.FirstName != "" {
-		ret += serverutils.AddValuesToQuery("first_name", contact.FirstName)
+		ret += serverutils.AddValuesToQuery(firstNameFieldInDB, contact.FirstName)
+		isSeparatorNeeded = true
 	}
 
 	if contact.LastName != "" {
-		ret += serverutils.AddValuesToQuery(", last_name", contact.LastName)
+		if isSeparatorNeeded {
+			ret += sqlSeparatorValues
+			isSeparatorNeeded = false
+		}
+		ret += serverutils.AddValuesToQuery(lastNameFieldInDB, contact.LastName)
 	}
 
 	return ret
@@ -382,32 +427,51 @@ func isAddressExist(address *AddressRequestBody) bool {
 }
 
 func preparePhoneUpdateQuery(phone *PhoneRequestBody) string {
-	ret, _ := serverutils.GetQuery("editPhone")
+	ret, _ := serverutils.GetQuery(sqlQueryEditPhone)
+	var isSeparatorNeeded bool
 	if phone.Description != "" {
-		ret += serverutils.AddValuesToQuery("description", phone.Description)
+		ret += serverutils.AddValuesToQuery(descriptionFieldInDB, phone.Description)
+		isSeparatorNeeded = true
 	}
 	if phone.PhoneNumber != "" {
-		ret += serverutils.AddValuesToQuery(", phone_number", phone.PhoneNumber)
+		if isSeparatorNeeded {
+			ret += sqlSeparatorValues
+		}
+		ret += serverutils.AddValuesToQuery(phoneNumberFieldInDB, phone.PhoneNumber)
 	}
 	return ret
 }
 
 func prepareAddressUpdateQuery(address *AddressRequestBody) string {
-	ret, _ := serverutils.GetQuery("editAddress")
+	ret, _ := serverutils.GetQuery(sqlQueryEditAddress)
+	var isSeparatorNeeded bool
 	if address.Description != "" {
-		ret += serverutils.AddValuesToQuery("description", address.Description)
+		ret += serverutils.AddValuesToQuery(descriptionFieldInDB, address.Description)
+		isSeparatorNeeded = true
 	}
 	if address.City != "" {
-		ret += serverutils.AddValuesToQuery(", city", address.City)
+		if isSeparatorNeeded {
+			ret += sqlSeparatorValues
+		}
+		ret += serverutils.AddValuesToQuery(cityFieldInDB, address.City)
 	}
 	if address.Street != "" {
-		ret += serverutils.AddValuesToQuery(", street", address.Street)
+		if isSeparatorNeeded {
+			ret += sqlSeparatorValues
+		}
+		ret += serverutils.AddValuesToQuery(streetFieldInDB, address.Street)
 	}
 	if address.HomeNumber != "" {
-		ret += serverutils.AddValuesToQuery(", home_number", address.HomeNumber)
+		if isSeparatorNeeded {
+			ret += sqlSeparatorValues
+		}
+		ret += serverutils.AddValuesToQuery(homeNumberFieldInDB, address.HomeNumber)
 	}
 	if address.Apartment != "" {
-		ret += serverutils.AddValuesToQuery(", apartment", address.Apartment)
+		if isSeparatorNeeded {
+			ret += sqlSeparatorValues
+		}
+		ret += serverutils.AddValuesToQuery(apartmentFieldInDB, address.Apartment)
 	}
 
 	return ret
@@ -415,7 +479,7 @@ func prepareAddressUpdateQuery(address *AddressRequestBody) string {
 
 func getWhereCond(fieldName string, id string) string {
 	var ret string
-	where, _ := serverutils.GetQuery("where")
+	where, _ := serverutils.GetQuery(sqlQueryWhere)
 	ret += where
 
 	ret += serverutils.AddValuesToQuery(fieldName, id)
