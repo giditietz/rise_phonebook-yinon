@@ -1,5 +1,7 @@
 package serverutils
 
+import "fmt"
+
 var queryMap = map[string]string{
 	"getAll": `
 		SELECT * FROM contacts 
@@ -27,6 +29,8 @@ var queryMap = map[string]string{
 					) 
 					VALUES (?, ?, ?)`,
 	"deleteContact": "DELETE FROM contacts WHERE contact_id = ?",
+	"editContact":   "UPDATE contacts SET ",
+	"where":         " WHERE ",
 }
 
 func GetQuery(key string) (string, bool) {
@@ -34,4 +38,8 @@ func GetQuery(key string) (string, bool) {
 		return queryMap[key], ok
 	}
 	return "", false
+}
+
+func AddValuesToQuery(fieldName string, value string) string {
+	return fmt.Sprintf(" %s = \"%s\" ", fieldName, value)
 }

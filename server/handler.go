@@ -229,38 +229,30 @@ func DeleteContact(c *gin.Context) {
 }
 
 func EditContact(c *gin.Context) {
-	// db := setup.GetDBConn()
-	// var newContact ContactRequestBody
+	db := setup.GetDBConn()
+	id := c.Param("id")
 
-	// if err := c.BindJSON(&newContact); err != nil {
-	// 	c.IndentedJSON(http.StatusInternalServerError, err)
-	// }
+	var editContact ContactRequestBody
 
-	// const createContactQuery string = "REPLACE INTO contacts(first_name, last_name) VALUES (?, ?);"
-	// result, err := db.Exec(createContactQuery, newContact.FirstName, newContact.LastName)
-	// if err != nil {
-	// 	c.IndentedJSON(http.StatusInternalServerError, err)
-	// 	return
-	// }
+	if err := c.BindJSON(&editContact); err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, err)
+	}
+	editQuery, _ := serverutils.GetQuery("editContact")
 
-	// contactId, err := result.LastInsertId()
+	if editContact.FirstName != "" {
+		editQuery += serverutils.AddValuesToQuery("first_name", editContact.FirstName)
+	}
 
-	// const addAddressQuery string = "REPLACE INTO addresses(contact_id, description, city, street, home_number, apartment) VALUES (?, ?, ?, ?, ?, ?)"
+	if editContact.LastName != "" {
+		editQuery += serverutils.AddValuesToQuery(", last_name", editContact.LastName)
+	}
 
-	// _, err = db.Exec(addAddressQuery, contactId, newContact.AddressReq.Description, newContact.AddressReq.City,
-	// 	newContact.AddressReq.Street, newContact.AddressReq.HomeNumber, newContact.AddressReq.Apartment)
-	// if err != nil {
-	// 	c.IndentedJSON(http.StatusInternalServerError, err)
-	// 	return
-	// }
+	where, _ := serverutils.GetQuery("where")
+	editQuery += where
 
-	// const addPhoneQuery string = "REPLACE INTO phones(contact_id, description, phone_number) VALUES (?, ?, ?)"
+	editQuery += serverutils.AddValuesToQuery("contact_id", id)
 
-	// _, err = db.Exec(addPhoneQuery, contactId, newContact.PhoneReq.Description, newContact.PhoneReq.PhoneNumber)
-	// if err != nil {
-	// 	c.IndentedJSON(http.StatusInternalServerError, err)
-	// 	return
-	// }
+	db.Exec(editQuery)
 
-	// c.IndentedJSON(http.StatusCreated, contactId)
+	c.IndentedJSON(http.StatusCreated, id)
 }
