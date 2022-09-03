@@ -76,27 +76,18 @@ func GetAllContacts(c *gin.Context) {
 			&phone.PhoneId, &phone.Description, &phone.PhoneNumber); err != nil {
 			c.IndentedJSON(http.StatusInternalServerError, contacts)
 		}
+
 		if val, ok := contacts[contact.ID]; ok {
-			if _, ok := phones[phone.PhoneId]; !ok {
-				val.Phone = append(val.Phone, phone)
-				phones[phone.PhoneId] = true
-			}
-			if _, ok := addresses[address.AddressID]; !ok {
-				val.Address = append(val.Address, address)
-				addresses[address.AddressID] = true
-			}
-			contacts[contact.ID] = val
-		} else {
-			if address.AddressID.Valid == true {
-				contact.Address = append(contact.Address, address)
-			}
-			if phone.PhoneId.Valid == true {
-				contact.Phone = append(contact.Phone, phone)
-			}
-			contacts[contact.ID] = contact
-			phones[phone.PhoneId] = true
-			addresses[address.AddressID] = true
+			contact = val
 		}
+
+		if address.AddressID.Valid == true && !keyExist(addresses, address.AddressID) {
+			updateAddress(&contact, addresses, &address)
+		}
+		if phone.PhoneId.Valid == true && !keyExist(phones, phone.PhoneId) {
+			updatePhone(&contact, phones, &phone)
+		}
+		updateContact(contacts, &contact)
 	}
 
 	if err = rows.Err(); err != nil {
@@ -104,6 +95,28 @@ func GetAllContacts(c *gin.Context) {
 	}
 
 	c.IndentedJSON(http.StatusOK, contacts)
+}
+
+func keyExist(m map[sql.NullInt32]bool, key sql.NullInt32) bool {
+	return m[key]
+}
+
+func updatePhone(contact *Contact, phones map[sql.NullInt32]bool, phone *Phone) {
+	*&contact.Phone = append(contact.Phone, *phone)
+	updateRecordExist(phones, phone.PhoneId)
+}
+
+func updateAddress(contact *Contact, addresses map[sql.NullInt32]bool, address *Address) {
+	*&contact.Address = append(contact.Address, *address)
+	updateRecordExist(addresses, address.AddressID)
+}
+
+func updateContact(contacts map[int]Contact, contact *Contact) {
+	contacts[contact.ID] = *contact
+}
+
+func updateRecordExist(recordMap map[sql.NullInt32]bool, key sql.NullInt32) {
+	recordMap[key] = true
 }
 
 func CreateContact(c *gin.Context) {
