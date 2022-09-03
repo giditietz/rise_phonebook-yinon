@@ -3,6 +3,7 @@ package server
 import (
 	"database/sql"
 	"net/http"
+	serverutils "phonebook/server/server_utils"
 	"phonebook/setup"
 
 	"github.com/gin-gonic/gin"
@@ -55,9 +56,9 @@ type ContactRequestBody struct {
 
 func GetAllContacts(c *gin.Context) {
 	db := setup.GetDBConn()
-	const query string = "SELECT * FROM contacts LEFT JOIN addresses USING (contact_id) LEFT JOIN phones USING (contact_id)"
+	getAllQuery, _ := serverutils.GetQuery("getAll")
 
-	rows, err := db.Query(query)
+	rows, err := db.Query(getAllQuery)
 	defer rows.Close()
 
 	contacts := make(map[int]Contact)
@@ -113,8 +114,9 @@ func CreateContact(c *gin.Context) {
 		c.IndentedJSON(http.StatusInternalServerError, err)
 	}
 
-	const createContactQuery string = "INSERT INTO contacts(first_name, last_name) VALUES (?, ?);"
-	result, err := db.Exec(createContactQuery, newContact.FirstName, newContact.LastName)
+	insertContactQuery, _ := serverutils.GetQuery("insertContact")
+
+	result, err := db.Exec(insertContactQuery, newContact.FirstName, newContact.LastName)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, err)
 		return
@@ -122,18 +124,18 @@ func CreateContact(c *gin.Context) {
 
 	contactId, err := result.LastInsertId()
 
-	const addAddressQuery string = "INSERT INTO addresses(contact_id, description, city, street, home_number, apartment) VALUES (?, ?, ?, ?, ?, ?)"
+	insertAddressQuery, _ := serverutils.GetQuery("insertAddress")
 
-	_, err = db.Exec(addAddressQuery, contactId, newContact.AddressReq.Description, newContact.AddressReq.City,
+	_, err = db.Exec(insertAddressQuery, contactId, newContact.AddressReq.Description, newContact.AddressReq.City,
 		newContact.AddressReq.Street, newContact.AddressReq.HomeNumber, newContact.AddressReq.Apartment)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, err)
 		return
 	}
 
-	const addPhoneQuery string = "INSERT INTO phones(contact_id, description, phone_number) VALUES (?, ?, ?)"
+	insertPhoneQuery, _ := serverutils.GetQuery("insertPhone")
 
-	_, err = db.Exec(addPhoneQuery, contactId, newContact.PhoneReq.Description, newContact.PhoneReq.PhoneNumber)
+	_, err = db.Exec(insertPhoneQuery, contactId, newContact.PhoneReq.Description, newContact.PhoneReq.PhoneNumber)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, err)
 		return
@@ -147,13 +149,50 @@ func DeleteContact(c *gin.Context) {
 
 	id := c.Param("id")
 
-	const query string = "DELETE FROM contacts WHERE contact_id = ?"
+	deleteContactQuery, _ := serverutils.GetQuery("deleteContact")
 
-	_, err := db.Exec(query, id)
+	_, err := db.Exec(deleteContactQuery, id)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, err)
 		return
 	}
 
 	c.IndentedJSON(http.StatusOK, nil)
+}
+
+func EditContact(c *gin.Context) {
+	db := setup.GetDBConn()
+	var newContact ContactRequestBody
+
+	if err := c.BindJSON(&newContact); err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, err)
+	}
+
+	const createContactQuery string = "REPLACE INTO contacts(first_name, last_name) VALUES (?, ?);"
+	result, err := db.Exec(createContactQuery, newContact.FirstName, newContact.LastName)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	contactId, err := result.LastInsertId()
+
+	const addAddressQuery string = "REPLACE INTO addresses(contact_id, description, city, street, home_number, apartment) VALUES (?, ?, ?, ?, ?, ?)"
+
+	_, err = db.Exec(addAddressQuery, contactId, newContact.AddressReq.Description, newContact.AddressReq.City,
+		newContact.AddressReq.Street, newContact.AddressReq.HomeNumber, newContact.AddressReq.Apartment)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	const addPhoneQuery string = "REPLACE INTO phones(contact_id, description, phone_number) VALUES (?, ?, ?)"
+
+	_, err = db.Exec(addPhoneQuery, contactId, newContact.PhoneReq.Description, newContact.PhoneReq.PhoneNumber)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.IndentedJSON(http.StatusCreated, contactId)
 }
