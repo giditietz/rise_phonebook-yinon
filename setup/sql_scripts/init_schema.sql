@@ -39,8 +39,20 @@ CREATE TABLE phones (
 INSERT INTO contacts VALUES (1, "Yinon", "Yishay");
 INSERT INTO contacts VALUES (2, "Talya", "Yishay");
 INSERT INTO contacts(first_name, last_name) VALUES ("Moshe", "Yishay");
-INSERT INTO addresses VALUES (1, 1, "Home", "Revava", "bla", "10", "9");
-INSERT INTO addresses VALUES (2, 1, "Work", "Tel Aviv", "bla", "10", "9");
-INSERT INTO phones VALUES (1, 1, "Mobile", "052-8119308");
-INSERT INTO phones VALUES (2, 1, "Mobile", "052-8119308");
-INSERT INTO phones VALUES (3, 1, "Mobile", "052-8119308")
+INSERT INTO contacts(first_name, last_name) VALUES ("4", "Yishay");
+INSERT INTO contacts(first_name, last_name) VALUES ("5", "Yishay");
+INSERT INTO contacts(first_name, last_name) VALUES ("6", "Yishay");
+INSERT INTO contacts(first_name, last_name) VALUES ("7", "Yishay");
+INSERT INTO contacts(first_name, last_name) VALUES ("8", "Yishay");
+INSERT INTO contacts(first_name, last_name) VALUES ("9", "Yishay");
+INSERT INTO contacts(first_name, last_name) VALUES ("10", "Yishay");
+INSERT INTO contacts(first_name, last_name) VALUES ("11", "Yishay");
+INSERT INTO contacts(first_name, last_name) VALUES ("12", "Yishay");
+INSERT INTO contacts(first_name, last_name) VALUES ("13", "Yishay");
+INSERT INTO contacts(first_name, last_name) VALUES ("14", "Yishay");
+INSERT INTO contacts(first_name, last_name) VALUES ("15", "Yishay");
+-- INSERT INTO addresses VALUES (1, 1, "Home", "Revava", "bla", "10", "9");
+-- INSERT INTO addresses VALUES (2, 1, "Work", "Tel Aviv", "bla", "10", "9");
+-- INSERT INTO phones VALUES (1, 1, "Mobile", "052-8119308");
+-- INSERT INTO phones VALUES (2, 1, "Mobile", "052-8119308");
+-- INSERT INTO phones VALUES (3, 1, "Mobile", "052-8119308")

@@ -33,6 +33,7 @@ var queryMap = map[string]string{
 					VALUES (?, ?, ?)`,
 	"editPhone": `UPDATE phones SET `,
 	"where":     " WHERE ",
+	"limit":     "LIMIT",
 }
 
 func GetQuery(key string) (string, bool) {
@@ -44,4 +45,10 @@ func GetQuery(key string) (string, bool) {
 
 func AddValuesToQuery(fieldName string, value string) string {
 	return fmt.Sprintf(" %s = \"%s\" ", fieldName, value)
+}
+
+func GetLimitQuery(offset int, limit int) string {
+	ret, _ := GetQuery("limit")
+	ret += fmt.Sprintf(" %d, %d", offset, limit)
+	return ret
 }

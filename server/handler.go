@@ -6,6 +6,7 @@ import (
 	"net/http"
 	serverutils "phonebook/server/server_utils"
 	"phonebook/setup"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -81,7 +82,11 @@ type PhoneResponseBody struct {
 func GetAllContacts(c *gin.Context) {
 	db := setup.GetDBConn()
 	getAllQuery, _ := serverutils.GetQuery("getAll")
+	pageNum, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageNum -= 1
 
+	getAllQuery += serverutils.GetLimitQuery(pageNum*10, 10)
+	fmt.Println(getAllQuery)
 	rows, err := db.Query(getAllQuery)
 	defer rows.Close()
 
