@@ -86,8 +86,74 @@ func GetAllContacts(c *gin.Context) {
 	pageNum -= 1
 
 	getAllQuery += serverutils.GetLimitQuery(pageNum*10, 10)
-	fmt.Println(getAllQuery)
 	rows, err := db.Query(getAllQuery)
+	defer rows.Close()
+
+	contacts := make(map[int]ContactResponseBody)
+	phones := make(map[int]bool)
+	addresses := make(map[int]bool)
+
+	for rows.Next() {
+		var contact ContactResponseBody
+		var address AddressQuery
+		var phone PhoneQuery
+
+		if err := rows.Scan(&contact.ContactID, &contact.FirstName, &contact.LastName,
+			&address.AddressID, &address.Description, &address.City, &address.Street,
+			&address.HomeNumber, &address.Apartment,
+			&phone.PhoneID, &phone.Description, &phone.PhoneNumber); err != nil {
+			c.IndentedJSON(http.StatusInternalServerError, contacts)
+		}
+
+		if val, ok := contacts[contact.ContactID]; ok {
+			contact = val
+		}
+
+		if address.AddressID.Valid == true && !keyExist(addresses, int(address.AddressID.Int32)) {
+			responseAddress := parseAddressQueryToResponse(&address)
+			updateAddress(&contact, addresses, responseAddress)
+		}
+		if phone.PhoneID.Valid == true && !keyExist(phones, int(phone.PhoneID.Int32)) {
+			responsePhone := parsePhoneQueryToResponse(&phone)
+			updatePhone(&contact, phones, responsePhone)
+		}
+		updateContact(contacts, &contact)
+	}
+
+	if err = rows.Err(); err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, contacts)
+	}
+
+	c.IndentedJSON(http.StatusOK, contacts)
+}
+
+func SearchContact(c *gin.Context) {
+	db := setup.GetDBConn()
+	getSearchQuery, _ := serverutils.GetQuery("getAll")
+	whereQuery, _ := serverutils.GetQuery("where")
+	isFirstNameSearch := false
+	isLastNameSearch := false
+
+	firstName, isFirstNameSearch := c.GetQuery("first_name")
+	if isFirstNameSearch {
+		getSearchQuery += whereQuery
+		getSearchQuery += serverutils.AddValuesToQuery("first_name", firstName)
+	}
+	lastName, isLastNameSearch := c.GetQuery("last_name")
+	if isLastNameSearch {
+		if isFirstNameSearch {
+			getSearchQuery += " AND "
+		} else {
+			getSearchQuery += whereQuery
+		}
+		getSearchQuery += serverutils.AddValuesToQuery("last_name", lastName)
+	}
+
+	pageNum, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageNum -= 1
+	getSearchQuery += serverutils.GetLimitQuery(pageNum*10, 10)
+
+	rows, err := db.Query(getSearchQuery)
 	defer rows.Close()
 
 	contacts := make(map[int]ContactResponseBody)

@@ -13,6 +13,7 @@ func InitRoutes() {
 		api.POST("/contacts", CreateContact)
 		api.DELETE("/contacts/:id", DeleteContact)
 		api.PUT("/contacts/:id", EditContact)
+		api.GET("/contacts/search", SearchContact)
 	}
 
 	router.Run("localhost:9000")
