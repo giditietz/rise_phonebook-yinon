@@ -248,16 +248,15 @@ func EditContact(c *gin.Context) {
 
 	for _, phone := range editContact.PhoneReq {
 		if !isPhoneExist(&phone) {
-			query, _ := serverutils.GetQuery("insertPhone")
-			_, err := db.Exec(query, contactID, phone.Description, phone.PhoneNumber)
+			insertPhoneQuery, _ := serverutils.GetQuery("insertPhone")
+			_, err := db.Exec(insertPhoneQuery, contactID, phone.Description, phone.PhoneNumber)
 			if err != nil {
 				c.IndentedJSON(http.StatusInternalServerError, err)
 				return
 			}
 		} else {
 			editPhoneQuery := preparePhoneUpdateQuery(&phone)
-			editPhoneQuery += getWhereCond("contact_id", contactID)
-			fmt.Println("query: ", editPhoneQuery)
+			editPhoneQuery += getWhereCond("phone_id", fmt.Sprintf("%d", phone.PhoneID))
 			_, err := db.Exec(editPhoneQuery)
 			if err != nil {
 				c.IndentedJSON(http.StatusInternalServerError, err)
@@ -267,18 +266,19 @@ func EditContact(c *gin.Context) {
 	}
 
 	for _, address := range editContact.AddressReq {
-		if !isPhoneExist(&phone) {
-			query, _ := serverutils.GetQuery("insertPhone")
-			_, err := db.Exec(query, contactID, phone.Description, phone.PhoneNumber)
+		if !isAddressExist(&address) {
+			insertAddressQuery, _ := serverutils.GetQuery("insertAddress")
+			_, err := db.Exec(insertAddressQuery, contactID, address.Description,
+				address.City, address.Street,
+				address.HomeNumber, address.Apartment)
 			if err != nil {
 				c.IndentedJSON(http.StatusInternalServerError, err)
 				return
 			}
 		} else {
-			editPhoneQuery := preparePhoneUpdateQuery(&phone)
-			editPhoneQuery += getWhereCond("contact_id", contactID)
-			fmt.Println("query: ", editPhoneQuery)
-			_, err := db.Exec(editPhoneQuery)
+			editAddressQuery := prepareAddressUpdateQuery(&address)
+			editAddressQuery += getWhereCond("address_id", fmt.Sprintf("%d", address.AddressID))
+			_, err := db.Exec(editAddressQuery)
 			if err != nil {
 				c.IndentedJSON(http.StatusInternalServerError, err)
 				return
@@ -318,6 +318,27 @@ func preparePhoneUpdateQuery(phone *PhoneRequestBody) string {
 	if phone.PhoneNumber != "" {
 		ret += serverutils.AddValuesToQuery(", phone_number", phone.PhoneNumber)
 	}
+	return ret
+}
+
+func prepareAddressUpdateQuery(address *AddressRequestBody) string {
+	ret, _ := serverutils.GetQuery("editAddress")
+	if address.Description != "" {
+		ret += serverutils.AddValuesToQuery("description", address.Description)
+	}
+	if address.City != "" {
+		ret += serverutils.AddValuesToQuery(", city", address.City)
+	}
+	if address.Street != "" {
+		ret += serverutils.AddValuesToQuery(", street", address.Street)
+	}
+	if address.HomeNumber != "" {
+		ret += serverutils.AddValuesToQuery(", home_number", address.HomeNumber)
+	}
+	if address.Apartment != "" {
+		ret += serverutils.AddValuesToQuery(", apartment", address.Apartment)
+	}
+
 	return ret
 }
 

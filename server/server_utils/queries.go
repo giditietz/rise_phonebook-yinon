@@ -24,6 +24,7 @@ var queryMap = map[string]string{
 					  apartment
 					  ) 
 					  VALUES (?, ?, ?, ?, ?, ?)`,
+	"editAddress": `UPDATE addresses SET `,
 	"insertPhone": `INSERT INTO phones(
 					contact_id, 
 					description, 
