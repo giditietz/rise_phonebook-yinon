@@ -13,6 +13,8 @@ var queryMap = map[string]string{
 						last_name
 						) 
 					   VALUES (?, ?);`,
+	"deleteContact": `DELETE FROM contacts WHERE contact_id = ?`,
+	"editContact":   `UPDATE contacts SET `,
 	"insertAddress": `INSERT INTO addresses(
 					  contact_id, 
 					  description, 
@@ -28,9 +30,8 @@ var queryMap = map[string]string{
 					phone_number
 					) 
 					VALUES (?, ?, ?)`,
-	"deleteContact": "DELETE FROM contacts WHERE contact_id = ?",
-	"editContact":   "UPDATE contacts SET ",
-	"where":         " WHERE ",
+	"editPhone": `UPDATE phones SET `,
+	"where":     " WHERE ",
 }
 
 func GetQuery(key string) (string, bool) {

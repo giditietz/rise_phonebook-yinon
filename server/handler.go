@@ -11,13 +11,13 @@ import (
 )
 
 type ContactQuery struct {
-	ContactID int    `json:"id"`
+	ContactID int    `json:"ContactID"`
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 }
 
 type AddressQuery struct {
-	AddressID   sql.NullInt32  `json:"addressId"`
+	AddressID   sql.NullInt32  `json:"addressID"`
 	Description sql.NullString `json:"description"`
 	City        sql.NullString `json:"city"`
 	Street      sql.NullString `json:"street"`
@@ -26,7 +26,7 @@ type AddressQuery struct {
 }
 
 type PhoneQuery struct {
-	PhoneId     sql.NullInt32  `json:"phoneId"`
+	PhoneID     sql.NullInt32  `json:"phoneID"`
 	Description sql.NullString `json:"description"`
 	PhoneNumber sql.NullString `json:"PhoneNumber"`
 }
@@ -39,7 +39,8 @@ type ContactRequestBody struct {
 }
 
 type AddressRequestBody struct {
-	ContactId   int    `json:"contact_id"`
+	ContactID   int    `json:"contactID"`
+	AddressID   int    `json:"addressID"`
 	Description string `json:"description"`
 	City        string `json:"city"`
 	Street      string `json:"street"`
@@ -48,21 +49,22 @@ type AddressRequestBody struct {
 }
 
 type PhoneRequestBody struct {
-	ContactId   int    `json:"contact_id"`
+	ContactID   int    `json:"contactID"`
+	PhoneID     int    `json:"phoneID"`
 	Description string `json:"description"`
 	PhoneNumber string `json:"phone_number"`
 }
 
 type ContactResponseBody struct {
-	ContactID  int                   `json:"id"`
-	FirstName  string                `json:"first_name"`
-	LastName   string                `json:"last_name"`
+	ContactID  int                   `json:"contactID"`
+	FirstName  string                `json:"firstName"`
+	LastName   string                `json:"lastName"`
 	AddressRes []AddressResponseBody `json:"address"`
 	PhoneRes   []PhoneResponseBody   `json:"phone"`
 }
 
 type AddressResponseBody struct {
-	AddressID   int    `json:"addressId"`
+	AddressID   int    `json:"AddressID"`
 	Description string `json:"description"`
 	City        string `json:"city"`
 	Street      string `json:"street"`
@@ -71,7 +73,7 @@ type AddressResponseBody struct {
 }
 
 type PhoneResponseBody struct {
-	PhoneId     int    `json:"phoneId"`
+	PhoneID     int    `json:"PhoneID"`
 	Description string `json:"description"`
 	PhoneNumber string `json:"phone_number"`
 }
@@ -95,7 +97,7 @@ func GetAllContacts(c *gin.Context) {
 		if err := rows.Scan(&contact.ContactID, &contact.FirstName, &contact.LastName,
 			&address.AddressID, &address.Description, &address.City, &address.Street,
 			&address.HomeNumber, &address.Apartment,
-			&phone.PhoneId, &phone.Description, &phone.PhoneNumber); err != nil {
+			&phone.PhoneID, &phone.Description, &phone.PhoneNumber); err != nil {
 			c.IndentedJSON(http.StatusInternalServerError, contacts)
 		}
 
@@ -107,7 +109,7 @@ func GetAllContacts(c *gin.Context) {
 			responseAddress := parseAddressQueryToResponse(&address)
 			updateAddress(&contact, addresses, responseAddress)
 		}
-		if phone.PhoneId.Valid == true && !keyExist(phones, int(phone.PhoneId.Int32)) {
+		if phone.PhoneID.Valid == true && !keyExist(phones, int(phone.PhoneID.Int32)) {
 			responsePhone := parsePhoneQueryToResponse(&phone)
 			updatePhone(&contact, phones, responsePhone)
 		}
@@ -127,7 +129,7 @@ func keyExist(m map[int]bool, key int) bool {
 
 func updatePhone(contact *ContactResponseBody, phones map[int]bool, phone *PhoneResponseBody) {
 	*&contact.PhoneRes = append(contact.PhoneRes, *phone)
-	updateRecordExist(phones, phone.PhoneId)
+	updateRecordExist(phones, phone.PhoneID)
 }
 
 func updateAddress(contact *ContactResponseBody, addresses map[int]bool, address *AddressResponseBody) {
@@ -159,7 +161,7 @@ func parseAddressQueryToResponse(address *AddressQuery) *AddressResponseBody {
 func parsePhoneQueryToResponse(phone *PhoneQuery) *PhoneResponseBody {
 	var ret PhoneResponseBody
 
-	ret.PhoneId = int(phone.PhoneId.Int32)
+	ret.PhoneID = int(phone.PhoneID.Int32)
 	ret.Description = phone.Description.String
 	ret.PhoneNumber = phone.PhoneNumber.String
 
@@ -186,11 +188,11 @@ func CreateContact(c *gin.Context) {
 
 	fmt.Println(newAddresses)
 
-	contactId, err := result.LastInsertId()
+	contactID, err := result.LastInsertId()
 
 	insertAddressQuery, _ := serverutils.GetQuery("insertAddress")
 	for _, address := range newAddresses {
-		_, err = db.Exec(insertAddressQuery, contactId, address.Description, address.City,
+		_, err = db.Exec(insertAddressQuery, contactID, address.Description, address.City,
 			address.Street, address.HomeNumber, address.Apartment)
 		if err != nil {
 			c.IndentedJSON(http.StatusInternalServerError, err)
@@ -202,14 +204,14 @@ func CreateContact(c *gin.Context) {
 
 	insertPhoneQuery, _ := serverutils.GetQuery("insertPhone")
 	for _, phone := range newPhones {
-		_, err = db.Exec(insertPhoneQuery, contactId, phone.Description, phone.PhoneNumber)
+		_, err = db.Exec(insertPhoneQuery, contactID, phone.Description, phone.PhoneNumber)
 		if err != nil {
 			c.IndentedJSON(http.StatusInternalServerError, err)
 			return
 		}
 	}
 
-	c.IndentedJSON(http.StatusCreated, contactId)
+	c.IndentedJSON(http.StatusCreated, contactID)
 }
 
 func DeleteContact(c *gin.Context) {
@@ -230,29 +232,101 @@ func DeleteContact(c *gin.Context) {
 
 func EditContact(c *gin.Context) {
 	db := setup.GetDBConn()
-	id := c.Param("id")
+	contactID := c.Param("id")
 
 	var editContact ContactRequestBody
 
 	if err := c.BindJSON(&editContact); err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, err)
 	}
-	editQuery, _ := serverutils.GetQuery("editContact")
 
-	if editContact.FirstName != "" {
-		editQuery += serverutils.AddValuesToQuery("first_name", editContact.FirstName)
+	editContactQuery, _ := serverutils.GetQuery("editContact")
+	editContactQuery += prepareContactUpdateQuery(&editContact)
+	editContactQuery += getWhereCond("contact_id", contactID)
+
+	db.Exec(editContactQuery)
+
+	for _, phone := range editContact.PhoneReq {
+		if !isPhoneExist(&phone) {
+			query, _ := serverutils.GetQuery("insertPhone")
+			_, err := db.Exec(query, contactID, phone.Description, phone.PhoneNumber)
+			if err != nil {
+				c.IndentedJSON(http.StatusInternalServerError, err)
+				return
+			}
+		} else {
+			editPhoneQuery := preparePhoneUpdateQuery(&phone)
+			editPhoneQuery += getWhereCond("contact_id", contactID)
+			fmt.Println("query: ", editPhoneQuery)
+			_, err := db.Exec(editPhoneQuery)
+			if err != nil {
+				c.IndentedJSON(http.StatusInternalServerError, err)
+				return
+			}
+		}
 	}
 
-	if editContact.LastName != "" {
-		editQuery += serverutils.AddValuesToQuery(", last_name", editContact.LastName)
+	for _, address := range editContact.AddressReq {
+		if !isPhoneExist(&phone) {
+			query, _ := serverutils.GetQuery("insertPhone")
+			_, err := db.Exec(query, contactID, phone.Description, phone.PhoneNumber)
+			if err != nil {
+				c.IndentedJSON(http.StatusInternalServerError, err)
+				return
+			}
+		} else {
+			editPhoneQuery := preparePhoneUpdateQuery(&phone)
+			editPhoneQuery += getWhereCond("contact_id", contactID)
+			fmt.Println("query: ", editPhoneQuery)
+			_, err := db.Exec(editPhoneQuery)
+			if err != nil {
+				c.IndentedJSON(http.StatusInternalServerError, err)
+				return
+			}
+		}
 	}
 
+	c.IndentedJSON(http.StatusCreated, contactID)
+}
+
+func prepareContactUpdateQuery(contact *ContactRequestBody) string {
+	var ret string
+	if contact.FirstName != "" {
+		ret += serverutils.AddValuesToQuery("first_name", contact.FirstName)
+	}
+
+	if contact.LastName != "" {
+		ret += serverutils.AddValuesToQuery(", last_name", contact.LastName)
+	}
+
+	return ret
+}
+
+func isPhoneExist(phone *PhoneRequestBody) bool {
+	return phone.PhoneID != 0
+}
+
+func isAddressExist(address *AddressRequestBody) bool {
+	return address.AddressID != 0
+}
+
+func preparePhoneUpdateQuery(phone *PhoneRequestBody) string {
+	ret, _ := serverutils.GetQuery("editPhone")
+	if phone.Description != "" {
+		ret += serverutils.AddValuesToQuery("description", phone.Description)
+	}
+	if phone.PhoneNumber != "" {
+		ret += serverutils.AddValuesToQuery(", phone_number", phone.PhoneNumber)
+	}
+	return ret
+}
+
+func getWhereCond(fieldName string, id string) string {
+	var ret string
 	where, _ := serverutils.GetQuery("where")
-	editQuery += where
+	ret += where
 
-	editQuery += serverutils.AddValuesToQuery("contact_id", id)
+	ret += serverutils.AddValuesToQuery(fieldName, id)
 
-	db.Exec(editQuery)
-
-	c.IndentedJSON(http.StatusCreated, id)
+	return ret
 }
