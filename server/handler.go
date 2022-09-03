@@ -9,7 +9,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Address struct {
+type ContactQuery struct {
+	ContactID int    `json:"id"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+}
+
+type AddressQuery struct {
 	AddressID   sql.NullInt32  `json:"addressId"`
 	Description sql.NullString `json:"description"`
 	City        sql.NullString `json:"city"`
@@ -18,18 +24,17 @@ type Address struct {
 	Apartment   sql.NullString `json:"apartment"`
 }
 
-type Phone struct {
+type PhoneQuery struct {
 	PhoneId     sql.NullInt32  `json:"phoneId"`
 	Description sql.NullString `json:"description"`
 	PhoneNumber sql.NullString `json:"PhoneNumber"`
 }
 
-type Contact struct {
-	ID        int       `json:"id"`
-	FirstName string    `json:"firstName"`
-	LastName  string    `json:"lastName"`
-	Address   []Address `json:"Address"`
-	Phone     []Phone   `json:"Phone"`
+type ContactRequestBody struct {
+	FirstName  string             `json:"first_name"`
+	LastName   string             `json:"last_name"`
+	AddressReq AddressRequestBody `json:"address"`
+	PhoneReq   PhoneRequestBody   `json:"phone"`
 }
 
 type AddressRequestBody struct {
@@ -47,11 +52,27 @@ type PhoneRequestBody struct {
 	PhoneNumber string `json:"phone_number"`
 }
 
-type ContactRequestBody struct {
-	FirstName  string             `json:"first_name"`
-	LastName   string             `json:"last_name"`
-	AddressReq AddressRequestBody `json:"address"`
-	PhoneReq   PhoneRequestBody   `json:"phone"`
+type ContactResponseBody struct {
+	ContactID  int                   `json:"id"`
+	FirstName  string                `json:"first_name"`
+	LastName   string                `json:"last_name"`
+	AddressRes []AddressResponseBody `json:"address"`
+	PhoneRes   []PhoneResponseBody   `json:"phone"`
+}
+
+type AddressResponseBody struct {
+	AddressID   int    `json:"addressId"`
+	Description string `json:"description"`
+	City        string `json:"city"`
+	Street      string `json:"street"`
+	HomeNumber  string `json:"home_number"`
+	Apartment   string `json:"apartment"`
+}
+
+type PhoneResponseBody struct {
+	PhoneId     int    `json:"phoneId"`
+	Description string `json:"description"`
+	PhoneNumber string `json:"phone_number"`
 }
 
 func GetAllContacts(c *gin.Context) {
@@ -61,31 +82,33 @@ func GetAllContacts(c *gin.Context) {
 	rows, err := db.Query(getAllQuery)
 	defer rows.Close()
 
-	contacts := make(map[int]Contact)
-	phones := make(map[sql.NullInt32]bool)
-	addresses := make(map[sql.NullInt32]bool)
+	contacts := make(map[int]ContactResponseBody)
+	phones := make(map[int]bool)
+	addresses := make(map[int]bool)
 
 	for rows.Next() {
-		var contact Contact
-		var address Address
-		var phone Phone
+		var contact ContactResponseBody
+		var address AddressQuery
+		var phone PhoneQuery
 
-		if err := rows.Scan(&contact.ID, &contact.FirstName, &contact.LastName,
+		if err := rows.Scan(&contact.ContactID, &contact.FirstName, &contact.LastName,
 			&address.AddressID, &address.Description, &address.City, &address.Street,
 			&address.HomeNumber, &address.Apartment,
 			&phone.PhoneId, &phone.Description, &phone.PhoneNumber); err != nil {
 			c.IndentedJSON(http.StatusInternalServerError, contacts)
 		}
 
-		if val, ok := contacts[contact.ID]; ok {
+		if val, ok := contacts[contact.ContactID]; ok {
 			contact = val
 		}
 
-		if address.AddressID.Valid == true && !keyExist(addresses, address.AddressID) {
-			updateAddress(&contact, addresses, &address)
+		if address.AddressID.Valid == true && !keyExist(addresses, int(address.AddressID.Int32)) {
+			responseAddress := parseAddressQueryToResponse(&address)
+			updateAddress(&contact, addresses, responseAddress)
 		}
-		if phone.PhoneId.Valid == true && !keyExist(phones, phone.PhoneId) {
-			updatePhone(&contact, phones, &phone)
+		if phone.PhoneId.Valid == true && !keyExist(phones, int(phone.PhoneId.Int32)) {
+			responsePhone := parsePhoneQueryToResponse(&phone)
+			updatePhone(&contact, phones, responsePhone)
 		}
 		updateContact(contacts, &contact)
 	}
@@ -97,26 +120,49 @@ func GetAllContacts(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, contacts)
 }
 
-func keyExist(m map[sql.NullInt32]bool, key sql.NullInt32) bool {
+func keyExist(m map[int]bool, key int) bool {
 	return m[key]
 }
 
-func updatePhone(contact *Contact, phones map[sql.NullInt32]bool, phone *Phone) {
-	*&contact.Phone = append(contact.Phone, *phone)
+func updatePhone(contact *ContactResponseBody, phones map[int]bool, phone *PhoneResponseBody) {
+	*&contact.PhoneRes = append(contact.PhoneRes, *phone)
 	updateRecordExist(phones, phone.PhoneId)
 }
 
-func updateAddress(contact *Contact, addresses map[sql.NullInt32]bool, address *Address) {
-	*&contact.Address = append(contact.Address, *address)
+func updateAddress(contact *ContactResponseBody, addresses map[int]bool, address *AddressResponseBody) {
+	*&contact.AddressRes = append(contact.AddressRes, *address)
 	updateRecordExist(addresses, address.AddressID)
 }
 
-func updateContact(contacts map[int]Contact, contact *Contact) {
-	contacts[contact.ID] = *contact
+func updateContact(contacts map[int]ContactResponseBody, contact *ContactResponseBody) {
+	contacts[contact.ContactID] = *contact
 }
 
-func updateRecordExist(recordMap map[sql.NullInt32]bool, key sql.NullInt32) {
+func updateRecordExist(recordMap map[int]bool, key int) {
 	recordMap[key] = true
+}
+
+func parseAddressQueryToResponse(address *AddressQuery) *AddressResponseBody {
+	var ret AddressResponseBody
+
+	ret.AddressID = int(address.AddressID.Int32)
+	ret.Description = address.Description.String
+	ret.City = address.City.String
+	ret.Street = address.Street.String
+	ret.HomeNumber = address.HomeNumber.String
+	ret.Apartment = address.Apartment.String
+
+	return &ret
+}
+
+func parsePhoneQueryToResponse(phone *PhoneQuery) *PhoneResponseBody {
+	var ret PhoneResponseBody
+
+	ret.PhoneId = int(phone.PhoneId.Int32)
+	ret.Description = phone.Description.String
+	ret.PhoneNumber = phone.PhoneNumber.String
+
+	return &ret
 }
 
 func CreateContact(c *gin.Context) {
