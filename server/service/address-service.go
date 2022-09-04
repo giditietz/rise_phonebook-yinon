@@ -24,7 +24,10 @@ func NewAddressService() *addressService {
 func (addressService *addressService) FindContactAddresses(contactId int) ([]entities.AddressQuery, error) {
 	db := setup.GetDBConn()
 
-	getContactAddressQuery, _ := serverutils.GetQuery(sqlQueryGetContactAddress)
+	getContactAddressQuery, err := serverutils.GetQuery(sqlQueryGetContactAddress)
+	if err != nil {
+		return nil, err
+	}
 	var addresses []entities.AddressQuery
 
 	addressRows, err := db.Query(getContactAddressQuery, contactId)
@@ -49,7 +52,10 @@ func (addressService *addressService) FindContactAddresses(contactId int) ([]ent
 func (addressService *addressService) SaveBulk(contactID int, addresses []entities.AddressRequestBody) error {
 	db := setup.GetDBConn()
 
-	insertAddressQuery, _ := serverutils.GetQuery(sqlQueryInsertAddress)
+	insertAddressQuery, err := serverutils.GetQuery(sqlQueryInsertAddress)
+	if err != nil {
+		return err
+	}
 
 	for _, address := range addresses {
 		_, err := db.Exec(insertAddressQuery, contactID, address.Description, address.City,
@@ -63,25 +69,41 @@ func (addressService *addressService) SaveBulk(contactID int, addresses []entiti
 
 func (addressService *addressService) Save(contactID int, address *entities.AddressRequestBody) error {
 	db := setup.GetDBConn()
-	insertAddressQuery, _ := serverutils.GetQuery(sqlQueryInsertAddress)
-	_, err := db.Exec(insertAddressQuery, contactID, address.Description,
+	insertAddressQuery, err := serverutils.GetQuery(sqlQueryInsertAddress)
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec(insertAddressQuery, contactID, address.Description,
 		address.City, address.Street,
 		address.HomeNumber, address.Apartment)
+
 	return err
 }
 
 func (addressService *addressService) Edit(address *entities.AddressRequestBody) error {
 	db := setup.GetDBConn()
 
-	editAddressQuery := prepareAddressUpdateQuery(address)
-	editAddressQuery += getWhereCond(addressIdFieldInDB, strconv.FormatInt(int64(address.AddressID), 10))
-	_, err := db.Exec(editAddressQuery)
+	editAddressQuery, err := prepareAddressUpdateQuery(address)
+	if err != nil {
+		return err
+	}
+	whereQuery, err := getWhereCond(addressIdFieldInDB, strconv.FormatInt(int64(address.AddressID), 10))
+	if err != nil {
+		return err
+	}
+	editAddressQuery += whereQuery
+	_, err = db.Exec(editAddressQuery)
 
 	return err
 }
 
-func prepareAddressUpdateQuery(address *entities.AddressRequestBody) string {
-	ret, _ := serverutils.GetQuery(sqlQueryEditAddress)
+func prepareAddressUpdateQuery(address *entities.AddressRequestBody) (string, error) {
+	ret, err := serverutils.GetQuery(sqlQueryEditAddress)
+	if err != nil {
+		return "", err
+	}
+
 	var isSeparatorNeeded bool
 	if address.Description != "" {
 		ret += serverutils.AddValuesToQuery(descriptionFieldInDB, address.Description)
@@ -116,5 +138,5 @@ func prepareAddressUpdateQuery(address *entities.AddressRequestBody) string {
 		ret += serverutils.AddValuesToQuery(apartmentFieldInDB, address.Apartment)
 	}
 
-	return ret
+	return ret, nil
 }

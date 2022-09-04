@@ -1,6 +1,8 @@
 package service
 
 import (
+	"database/sql"
+	"fmt"
 	"phonebook/server/entities"
 	serverutils "phonebook/server/server-utils"
 	"strconv"
@@ -25,9 +27,17 @@ func NewContactService() *contactService {
 
 func (contactService *contactService) FindAll(offset int, limit int) ([]entities.ContactResponseBody, error) {
 	db := setup.GetDBConn()
-	getAllQuery, _ := serverutils.GetQuery(sqlQueryGetAll)
+	getAllQuery, err := serverutils.GetQuery(sqlQueryGetAll)
+	if err != nil {
+		return nil, err
+	}
 
-	getAllQuery += serverutils.GetLimitQuery(offset, limit)
+	limitQuery, err := serverutils.GetLimitQuery(offset, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	getAllQuery += limitQuery
 	contactRows, err := db.Query(getAllQuery)
 	if err != nil {
 		return nil, err
@@ -38,32 +48,11 @@ func (contactService *contactService) FindAll(offset int, limit int) ([]entities
 	var contacts []entities.ContactResponseBody
 
 	for contactRows.Next() {
-		var contact entities.ContactResponseBody
-
-		if err := contactRows.Scan(&contact.ContactID, &contact.FirstName, &contact.LastName); err != nil {
-			return nil, err
-		}
-
-		addressService := NewAddressService()
-		phoneService := NewPhoneService()
-
-		addressQuery, err := addressService.FindContactAddresses(contact.ContactID)
+		contacts, err = getContactFromQuery(contactRows, contacts)
 		if err != nil {
+
 			return nil, err
 		}
-		for _, address := range addressQuery {
-			addressResponse := parseAddressQueryToResponse(&address)
-			contact.AddressRes = append(contact.AddressRes, *addressResponse)
-		}
-		phoneQuery, err := phoneService.FindContactPhones(contact.ContactID)
-		if err != nil {
-			return nil, err
-		}
-		for _, phone := range phoneQuery {
-			phoneResponse := parsePhoneQueryToResponse(&phone)
-			contact.PhoneRes = append(contact.PhoneRes, *phoneResponse)
-		}
-		contacts = append(contacts, contact)
 	}
 
 	return contacts, nil
@@ -94,24 +83,22 @@ func parsePhoneQueryToResponse(phone *entities.PhoneQuery) *entities.PhoneRespon
 
 func (contactService *contactService) Search(firstName string, lastName string, pageNum int) ([]entities.ContactResponseBody, error) {
 	db := setup.GetDBConn()
-	searchQuery, _ := serverutils.GetQuery(sqlQueryGetAll)
-	whereQuery, _ := serverutils.GetQuery(sqlQueryWhere)
-	andQuery, _ := serverutils.GetQuery(sqlQueryAnd)
-	isFirstNameSearch := false
+	searchQuery, err := serverutils.GetQuery(sqlQueryGetAll)
+	if err != nil {
+		return nil, err
+	}
 
-	if firstName != "" {
-		searchQuery += whereQuery
-		searchQuery += serverutils.AddValuesToQuery(firstNameFieldInDB, firstName)
+	parameterQuery, err := prepareSearchParameterQuery(firstName, lastName)
+	if err != nil {
+		return nil, err
 	}
-	if lastName != "" {
-		if isFirstNameSearch {
-			searchQuery += andQuery
-		} else {
-			searchQuery += whereQuery
-		}
-		searchQuery += serverutils.AddValuesToQuery(lastNameFieldInDB, lastName)
+	searchQuery += parameterQuery
+
+	limitQuery, err := serverutils.GetLimitQuery(pageNum*retrieveResultLimit, retrieveResultLimit)
+	if err != nil {
+		return nil, err
 	}
-	searchQuery += serverutils.GetLimitQuery(pageNum*retrieveResultLimit, retrieveResultLimit)
+	searchQuery += limitQuery
 
 	contactRows, err := db.Query(searchQuery)
 	if err != nil {
@@ -122,61 +109,119 @@ func (contactService *contactService) Search(firstName string, lastName string, 
 	var contacts []entities.ContactResponseBody
 
 	for contactRows.Next() {
-		var contact entities.ContactResponseBody
-
-		if err := contactRows.Scan(&contact.ContactID, &contact.FirstName, &contact.LastName); err != nil {
-			return nil, err
-		}
-
-		addressService := NewAddressService()
-		phoneService := NewPhoneService()
-
-		addressQuery, err := addressService.FindContactAddresses(contact.ContactID)
+		contacts, err = getContactFromQuery(contactRows, contacts)
 		if err != nil {
 			return nil, err
 		}
-		for _, address := range addressQuery {
-			addressResponse := parseAddressQueryToResponse(&address)
-			contact.AddressRes = append(contact.AddressRes, *addressResponse)
-		}
-		phoneQuery, err := phoneService.FindContactPhones(contact.ContactID)
-		if err != nil {
-			return nil, err
-		}
-		for _, phone := range phoneQuery {
-			phoneResponse := parsePhoneQueryToResponse(&phone)
-			contact.PhoneRes = append(contact.PhoneRes, *phoneResponse)
-		}
-
-		contacts = append(contacts, contact)
 	}
+	return contacts, nil
+}
+
+func prepareSearchParameterQuery(firstName string, lastName string) (string, error) {
+	var ret string
+	whereQuery, err := serverutils.GetQuery(sqlQueryWhere)
+	if err != nil {
+		return "", err
+	}
+	andQuery, err := serverutils.GetQuery(sqlQueryAnd)
+	if err != nil {
+		return "", err
+	}
+	isFirstNameSearch := false
+	if firstName != "" {
+		ret += whereQuery
+		ret += serverutils.AddValuesToQuery(firstNameFieldInDB, firstName)
+	}
+	if lastName != "" {
+		if isFirstNameSearch {
+			ret += andQuery
+		} else {
+			ret += whereQuery
+		}
+		ret += serverutils.AddValuesToQuery(lastNameFieldInDB, lastName)
+	}
+	return ret, nil
+}
+
+func updateAddresses(contact *entities.ContactResponseBody) error {
+	addressService := NewAddressService()
+
+	addressQuery, err := addressService.FindContactAddresses(contact.ContactID)
+	if err != nil {
+		return err
+	}
+	for _, address := range addressQuery {
+		addressResponse := parseAddressQueryToResponse(&address)
+		contact.AddressRes = append(contact.AddressRes, *addressResponse)
+	}
+	return nil
+}
+
+func updatePhones(contact *entities.ContactResponseBody) error {
+	phoneService := NewPhoneService()
+
+	phoneQuery, err := phoneService.FindContactPhones(contact.ContactID)
+	if err != nil {
+		return err
+	}
+	for _, phone := range phoneQuery {
+		phoneResponse := parsePhoneQueryToResponse(&phone)
+		contact.PhoneRes = append(contact.PhoneRes, *phoneResponse)
+	}
+	return nil
+}
+
+func getContactFromQuery(row *sql.Rows, contacts []entities.ContactResponseBody) ([]entities.ContactResponseBody, error) {
+	var contact entities.ContactResponseBody
+
+	if err := row.Scan(&contact.ContactID, &contact.FirstName, &contact.LastName); err != nil {
+		return nil, err
+	}
+
+	if err := updateAddresses(&contact); err != nil {
+		return nil, err
+	}
+
+	if err := updatePhones(&contact); err != nil {
+		return nil, err
+	}
+
+	contacts = append(contacts, contact)
 	return contacts, nil
 }
 
 func (contactService *contactService) Save(newContact *entities.ContactRequestBody) (int, error) {
 	db := setup.GetDBConn()
 
-	insertContactQuery, _ := serverutils.GetQuery(sqlQueryInsertContact)
+	insertContactQuery, err := serverutils.GetQuery(sqlQueryInsertContact)
+	if err != nil {
+		fmt.Println("f: ", err)
+		return 0, err
+	}
 
 	result, err := db.Exec(insertContactQuery, newContact.FirstName, newContact.LastName)
 	if err != nil {
+		fmt.Println("s: ", err)
 		return 0, err
 	}
 
 	contactID, err := result.LastInsertId()
 	if err != nil {
+		fmt.Println("t: ", err)
 		return 0, err
 	}
 	addressService := NewAddressService()
 
 	err = addressService.SaveBulk(int(contactID), newContact.AddressReq)
 	if err != nil {
+		fmt.Println("f: ", err)
 		return 0, err
 	}
 
 	phoneService := NewPhoneService()
 	err = phoneService.SaveBulk(int(contactID), newContact.PhoneReq)
 	if err != nil {
+		fmt.Println("f2: ", err)
 		return 0, err
 	}
 
@@ -186,9 +231,12 @@ func (contactService *contactService) Save(newContact *entities.ContactRequestBo
 func (contactService *contactService) Delete(contactID int) error {
 	db := setup.GetDBConn()
 
-	deleteContactQuery, _ := serverutils.GetQuery(sqlQueryDeleteContact)
+	deleteContactQuery, err := serverutils.GetQuery(sqlQueryDeleteContact)
+	if err != nil {
+		return err
+	}
 
-	_, err := db.Exec(deleteContactQuery, contactID)
+	_, err = db.Exec(deleteContactQuery, contactID)
 	if err != nil {
 		return err
 	}
@@ -199,11 +247,23 @@ func (contactService *contactService) Delete(contactID int) error {
 func (contactService *contactService) Edit(updateContact *entities.ContactRequestBody, contactID int) error {
 	db := setup.GetDBConn()
 
-	editContactQuery, _ := serverutils.GetQuery(sqlQueryEditContact)
-	editContactQuery += prepareContactUpdateQuery(updateContact)
-	editContactQuery += getWhereCond(contactIdFieldInDB, strconv.FormatInt(int64(contactID), 10))
+	editContactQuery, err := serverutils.GetQuery(sqlQueryEditContact)
+	if err != nil {
+		return err
+	}
 
-	db.Exec(editContactQuery)
+	editContactQuery += prepareContactUpdateQuery(updateContact)
+
+	whereQuery, err := getWhereCond(contactIdFieldInDB, strconv.FormatInt(int64(contactID), 10))
+	if err != nil {
+		return err
+	}
+
+	editContactQuery += whereQuery
+
+	if _, err = db.Exec(editContactQuery); err != nil {
+		return err
+	}
 
 	phoneService := NewPhoneService()
 	for _, phone := range updateContact.PhoneReq {
@@ -211,7 +271,6 @@ func (contactService *contactService) Edit(updateContact *entities.ContactReques
 			if err := phoneService.Save(contactID, &phone); err != nil {
 				return err
 			}
-
 		} else {
 			if err := phoneService.Edit(&phone); err != nil {
 				return err
@@ -259,14 +318,4 @@ func isPhoneExist(phone *entities.PhoneRequestBody) bool {
 
 func isAddressExist(address *entities.AddressRequestBody) bool {
 	return address.AddressID != 0
-}
-
-func getWhereCond(fieldName string, id string) string {
-	var ret string
-	where, _ := serverutils.GetQuery(sqlQueryWhere)
-	ret += where
-
-	ret += serverutils.AddValuesToQuery(fieldName, id)
-
-	return ret
 }

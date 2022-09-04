@@ -24,7 +24,10 @@ func NewPhoneService() *phoneService {
 func (phoneService *phoneService) FindContactPhones(contactId int) ([]entities.PhoneQuery, error) {
 	db := setup.GetDBConn()
 
-	getContactPhoneQuery, _ := serverutils.GetQuery(sqlQueryGetContactPhones)
+	getContactPhoneQuery, err := serverutils.GetQuery(sqlQueryGetContactPhones)
+	if err != nil {
+		return nil, err
+	}
 	var phones []entities.PhoneQuery
 
 	phonesRows, err := db.Query(getContactPhoneQuery, contactId)
@@ -48,7 +51,10 @@ func (phoneService *phoneService) FindContactPhones(contactId int) ([]entities.P
 
 func (phoneService *phoneService) SaveBulk(contactID int, phones []entities.PhoneRequestBody) error {
 	db := setup.GetDBConn()
-	insertPhoneQuery, _ := serverutils.GetQuery(sqlQueryInsertPhone)
+	insertPhoneQuery, err := serverutils.GetQuery(sqlQueryInsertPhone)
+	if err != nil {
+		return err
+	}
 	for _, phone := range phones {
 		_, err := db.Exec(insertPhoneQuery, contactID, phone.Description, phone.PhoneNumber)
 		if err != nil {
@@ -61,23 +67,36 @@ func (phoneService *phoneService) SaveBulk(contactID int, phones []entities.Phon
 
 func (phoneService *phoneService) Save(contactID int, phone *entities.PhoneRequestBody) error {
 	db := setup.GetDBConn()
-	insertPhoneQuery, _ := serverutils.GetQuery(sqlQueryInsertPhone)
-	_, err := db.Exec(insertPhoneQuery, contactID, phone.Description, phone.PhoneNumber)
+	insertPhoneQuery, err := serverutils.GetQuery(sqlQueryInsertPhone)
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec(insertPhoneQuery, contactID, phone.Description, phone.PhoneNumber)
 
 	return err
 }
 
 func (phoneService *phoneService) Edit(phone *entities.PhoneRequestBody) error {
 	db := setup.GetDBConn()
-	editPhoneQuery := preparePhoneUpdateQuery(phone)
-	editPhoneQuery += getWhereCond(phoneIdFieldInDB, strconv.FormatInt(int64(phone.PhoneID), 10))
-	_, err := db.Exec(editPhoneQuery)
+	editPhoneQuery, err := preparePhoneUpdateQuery(phone)
+	if err != nil {
+		return err
+	}
+	whereQuery, err := getWhereCond(phoneIdFieldInDB, strconv.FormatInt(int64(phone.PhoneID), 10))
+	if err != nil {
+		return err
+	}
+	editPhoneQuery += whereQuery
+	_, err = db.Exec(editPhoneQuery)
 
 	return err
 }
 
-func preparePhoneUpdateQuery(phone *entities.PhoneRequestBody) string {
-	ret, _ := serverutils.GetQuery(sqlQueryEditPhone)
+func preparePhoneUpdateQuery(phone *entities.PhoneRequestBody) (string, error) {
+	ret, err := serverutils.GetQuery(sqlQueryEditPhone)
+	if err != nil {
+		return "", err
+	}
 	var isSeparatorNeeded bool
 	if phone.Description != "" {
 		ret += serverutils.AddValuesToQuery(descriptionFieldInDB, phone.Description)
@@ -90,5 +109,5 @@ func preparePhoneUpdateQuery(phone *entities.PhoneRequestBody) string {
 		ret += serverutils.AddValuesToQuery(phoneNumberFieldInDB, phone.PhoneNumber)
 		isSeparatorNeeded = true
 	}
-	return ret
+	return ret, nil
 }

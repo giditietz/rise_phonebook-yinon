@@ -27,11 +27,12 @@ func NewContactController(service service.ContactService) ContactController {
 }
 
 func (controller *contactController) FindAll(c *gin.Context) ([]entities.ContactResponseBody, error) {
-	pageNum, _ := strconv.Atoi(c.DefaultQuery(ginQueryPage, ginDefaultPageStart))
+	pageNum, err := strconv.Atoi(c.DefaultQuery(ginQueryPage, ginDefaultPageStart))
+	if err != nil {
+		return nil, err
+	}
 
-	ret, err := controller.service.FindAll(pageNum*retrieveResultLimit, retrieveResultLimit)
-
-	return ret, err
+	return controller.service.FindAll(pageNum*retrieveResultLimit, retrieveResultLimit)
 }
 
 func (controller *contactController) Save(c *gin.Context) (int, error) {
@@ -40,15 +41,19 @@ func (controller *contactController) Save(c *gin.Context) (int, error) {
 	if err := c.BindJSON(&newContact); err != nil {
 		return 0, err
 	}
-	ret, err := controller.service.Save(&newContact)
-	if err != nil {
+
+	if err := ValidateContact(&newContact, true); err != nil {
 		return 0, err
 	}
-	return ret, nil
+
+	return controller.service.Save(&newContact)
 }
 
 func (controller *contactController) Delete(c *gin.Context) error {
-	contactID, _ := strconv.Atoi(c.Param(ginParamId))
+	contactID, err := strconv.Atoi(c.Param(ginParamId))
+	if err != nil {
+		return err
+	}
 
 	controller.service.Delete(contactID)
 
@@ -56,11 +61,18 @@ func (controller *contactController) Delete(c *gin.Context) error {
 }
 
 func (controller *contactController) Edit(c *gin.Context) error {
-	contactID, _ := strconv.Atoi(c.Param(ginParamId))
+	contactID, err := strconv.Atoi(c.Param(ginParamId))
+	if err != nil {
+		return err
+	}
 
 	var updateContact entities.ContactRequestBody
 
 	if err := c.BindJSON(&updateContact); err != nil {
+		return err
+	}
+
+	if err := ValidateContact(&updateContact, false); err != nil {
 		return err
 	}
 
@@ -70,7 +82,10 @@ func (controller *contactController) Edit(c *gin.Context) error {
 func (controller *contactController) Search(c *gin.Context) ([]entities.ContactResponseBody, error) {
 	firstName, _ := c.GetQuery(ginQueryFirstName)
 	lastName, _ := c.GetQuery(ginQueryLastName)
-	pageNum, _ := strconv.Atoi(c.DefaultQuery(ginQueryPage, ginDefaultPageStart))
+	pageNum, err := strconv.Atoi(c.DefaultQuery(ginQueryPage, ginDefaultPageStart))
+	if err != nil {
+		return nil, err
+	}
 
 	return controller.service.Search(firstName, lastName, pageNum)
 }

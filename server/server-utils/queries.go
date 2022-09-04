@@ -35,19 +35,32 @@ var queryMap = map[string]string{
 	"and":       " AND ",
 }
 
-func GetQuery(key string) (string, bool) {
+const (
+	keyMissingError = "no such key"
+)
+
+type KeyError struct{}
+
+func (keyError *KeyError) Error() string {
+	return keyMissingError
+}
+
+func GetQuery(key string) (string, error) {
 	if _, ok := queryMap[key]; ok {
-		return queryMap[key], ok
+		return queryMap[key], nil
 	}
-	return "", false
+	return "", &KeyError{}
 }
 
 func AddValuesToQuery(fieldName string, value string) string {
 	return fmt.Sprintf(" %s = \"%s\" ", fieldName, value)
 }
 
-func GetLimitQuery(offset int, limit int) string {
-	ret, _ := GetQuery("limit")
+func GetLimitQuery(offset int, limit int) (string, error) {
+	ret, err := GetQuery("limit")
+	if err != nil {
+		return "", err
+	}
 	ret += fmt.Sprintf(" %d, %d", offset, limit)
-	return ret
+	return ret, nil
 }
