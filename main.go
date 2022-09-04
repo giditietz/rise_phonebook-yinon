@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 	"phonebook/server"
-	"phonebook/setup"
+	"phonebook/server/setup"
 )
 
 func main() {

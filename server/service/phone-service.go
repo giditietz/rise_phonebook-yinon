@@ -3,7 +3,7 @@ package service
 import (
 	"phonebook/server/entities"
 	serverutils "phonebook/server/server-utils"
-	"phonebook/setup"
+	"phonebook/server/setup"
 	"strconv"
 )
 

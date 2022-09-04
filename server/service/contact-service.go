@@ -7,7 +7,7 @@ import (
 	serverutils "phonebook/server/server-utils"
 	"strconv"
 
-	"phonebook/setup"
+	"phonebook/server/setup"
 )
 
 type ContactService interface {
