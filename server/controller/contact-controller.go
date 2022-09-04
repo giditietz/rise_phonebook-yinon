@@ -9,7 +9,7 @@ import (
 )
 
 type ContactController interface {
-	FindAll(c *gin.Context) (map[int]entities.ContactResponseBody, error)
+	FindAll(c *gin.Context) ([]entities.ContactResponseBody, error)
 	Search(c *gin.Context) ([]entities.ContactResponseBody, error)
 	Save(c *gin.Context) (int, error)
 	Delete(c *gin.Context) error
@@ -26,7 +26,7 @@ func NewContactController(service service.ContactService) ContactController {
 	}
 }
 
-func (controller *contactController) FindAll(c *gin.Context) (map[int]entities.ContactResponseBody, error) {
+func (controller *contactController) FindAll(c *gin.Context) ([]entities.ContactResponseBody, error) {
 	pageNum, _ := strconv.Atoi(c.DefaultQuery(ginQueryPage, ginDefaultPageStart))
 
 	ret, err := controller.service.FindAll(pageNum*retrieveResultLimit, retrieveResultLimit)

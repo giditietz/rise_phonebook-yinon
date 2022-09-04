@@ -9,7 +9,7 @@ import (
 )
 
 type ContactService interface {
-	FindAll(offset int, limit int) (map[int]entities.ContactResponseBody, error)
+	FindAll(offset int, limit int) ([]entities.ContactResponseBody, error)
 	Save(newContact *entities.ContactRequestBody) (int, error)
 	Delete(contactID int) error
 	Edit(updateContact *entities.ContactRequestBody, contactID int) error
@@ -23,7 +23,7 @@ func NewContactService() *contactService {
 	return &contactService{}
 }
 
-func (contactService *contactService) FindAll(offset int, limit int) (map[int]entities.ContactResponseBody, error) {
+func (contactService *contactService) FindAll(offset int, limit int) ([]entities.ContactResponseBody, error) {
 	db := setup.GetDBConn()
 	getAllQuery, _ := serverutils.GetQuery(sqlQueryGetAll)
 
@@ -35,7 +35,7 @@ func (contactService *contactService) FindAll(offset int, limit int) (map[int]en
 
 	defer contactRows.Close()
 
-	contacts := make(map[int]entities.ContactResponseBody)
+	var contacts []entities.ContactResponseBody
 
 	for contactRows.Next() {
 		var contact entities.ContactResponseBody
@@ -63,8 +63,7 @@ func (contactService *contactService) FindAll(offset int, limit int) (map[int]en
 			phoneResponse := parsePhoneQueryToResponse(&phone)
 			contact.PhoneRes = append(contact.PhoneRes, *phoneResponse)
 		}
-
-		updateContact(contacts, &contact)
+		contacts = append(contacts, contact)
 	}
 
 	return contacts, nil
@@ -91,10 +90,6 @@ func parsePhoneQueryToResponse(phone *entities.PhoneQuery) *entities.PhoneRespon
 	ret.PhoneNumber = phone.PhoneNumber
 
 	return &ret
-}
-
-func updateContact(contacts map[int]entities.ContactResponseBody, contact *entities.ContactResponseBody) {
-	contacts[contact.ContactID] = *contact
 }
 
 func (contactService *contactService) Search(firstName string, lastName string, pageNum int) ([]entities.ContactResponseBody, error) {
