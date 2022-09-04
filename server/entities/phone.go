@@ -1,11 +1,10 @@
 package entities
 
-import "database/sql"
-
 type PhoneQuery struct {
-	PhoneID     sql.NullInt32  `json:"phoneID"`
-	Description sql.NullString `json:"description"`
-	PhoneNumber sql.NullString `json:"PhoneNumber"`
+	PhoneID     int    `json:"phoneID"`
+	ContactID   int    `json:"contactID"`
+	Description string `json:"description"`
+	PhoneNumber string `json:"PhoneNumber"`
 }
 
 type PhoneRequestBody struct {

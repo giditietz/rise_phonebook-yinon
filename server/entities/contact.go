@@ -1,9 +1,11 @@
 package entities
 
 type ContactQuery struct {
-	ContactID int    `json:"ContactID"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
+	ContactID    int            `json:"ContactID"`
+	FirstName    string         `json:"firstName"`
+	LastName     string         `json:"lastName"`
+	AddressQuery []AddressQuery `json:"address"`
+	PhoneQuery   []PhoneQuery   `json:"phone"`
 }
 
 type ContactRequestBody struct {

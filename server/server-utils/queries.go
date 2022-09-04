@@ -3,28 +3,26 @@ package serverutils
 import "fmt"
 
 var queryMap = map[string]string{
-	"getAll": `
-		SELECT * FROM contacts 
-		LEFT JOIN addresses USING (contact_id) 
-		LEFT JOIN phones USING (contact_id)
-	`,
+	"getAllContact": `SELECT * FROM contacts`,
 	"insertContact": `INSERT INTO contacts (
-						first_name, 
-						last_name
-						) 
-					   VALUES (?, ?);`,
-	"deleteContact": `DELETE FROM contacts WHERE contact_id = ?`,
-	"editContact":   `UPDATE contacts SET `,
+		first_name, 
+		last_name
+		) 
+		VALUES (?, ?);`,
+	"deleteContact":     `DELETE FROM contacts WHERE contact_id = ?`,
+	"editContact":       `UPDATE contacts SET `,
+	"getContactAddress": `SELECT * FROM addresses WHERE contact_id = ?`,
 	"insertAddress": `INSERT INTO addresses(
-					  contact_id, 
-					  description, 
-					  city, 
-					  street, 
-					  home_number, 
-					  apartment
-					  ) 
-					  VALUES (?, ?, ?, ?, ?, ?)`,
-	"editAddress": `UPDATE addresses SET `,
+		contact_id, 
+		description, 
+		city, 
+		street, 
+		home_number, 
+		apartment
+		) 
+		VALUES (?, ?, ?, ?, ?, ?)`,
+	"editAddress":      `UPDATE addresses SET `,
+	"getContactPhones": `SELECT * FROM phones WHERE contact_id = ?`,
 	"insertPhone": `INSERT INTO phones(
 					contact_id, 
 					description, 
@@ -33,7 +31,7 @@ var queryMap = map[string]string{
 					VALUES (?, ?, ?)`,
 	"editPhone": `UPDATE phones SET `,
 	"where":     " WHERE ",
-	"limit":     "LIMIT",
+	"limit":     " LIMIT",
 	"and":       " AND ",
 }
 

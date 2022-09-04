@@ -1,14 +1,13 @@
 package entities
 
-import "database/sql"
-
 type AddressQuery struct {
-	AddressID   sql.NullInt32  `json:"addressID"`
-	Description sql.NullString `json:"description"`
-	City        sql.NullString `json:"city"`
-	Street      sql.NullString `json:"street"`
-	HomeNumber  sql.NullString `json:"home_number"`
-	Apartment   sql.NullString `json:"apartment"`
+	AddressID   int    `json:"addressID"`
+	ContactID   int    `json:"contactID"`
+	Description string `json:"description"`
+	City        string `json:"city"`
+	Street      string `json:"street"`
+	HomeNumber  string `json:"home_number"`
+	Apartment   string `json:"apartment"`
 }
 
 type AddressRequestBody struct {

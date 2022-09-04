@@ -52,7 +52,7 @@ func ConnectToDB() (openError, pingError error) {
 }
 
 func InitSchema() error {
-	path, _ := filepath.Abs("./setup/sql_scripts/init_schema.sql")
+	path, _ := filepath.Abs("./setup/sql_scripts/init-schema.sql")
 	file, err := ioutil.ReadFile(path)
 
 	if err != nil {
