@@ -1,13 +1,17 @@
 package server
 
 import (
+	"phonebook/server/middlewares"
+
 	"github.com/gin-gonic/gin"
 )
 
 func InitRoutes() {
-	router := gin.Default()
+	server := gin.New()
 
-	api := router.Group("/api")
+	server.Use(gin.Recovery(), middlewares.Logger())
+
+	api := server.Group("/api")
 	{
 		api.GET("/contacts", GetAllContacts)
 		api.POST("/contacts", CreateContact)
@@ -16,5 +20,5 @@ func InitRoutes() {
 		api.GET("/contacts/search", SearchContact)
 	}
 
-	router.Run("localhost:9000")
+	server.Run("localhost:9000")
 }

@@ -51,8 +51,8 @@ INSERT INTO contacts(first_name, last_name) VALUES ("12", "Yishay");
 INSERT INTO contacts(first_name, last_name) VALUES ("13", "Yishay");
 INSERT INTO contacts(first_name, last_name) VALUES ("14", "Yishay");
 INSERT INTO contacts(first_name, last_name) VALUES ("15", "Yishay");
--- INSERT INTO addresses VALUES (1, 1, "Home", "Revava", "bla", "10", "9");
--- INSERT INTO addresses VALUES (2, 1, "Work", "Tel Aviv", "bla", "10", "9");
--- INSERT INTO phones VALUES (1, 1, "Mobile", "052-8119308");
--- INSERT INTO phones VALUES (2, 1, "Mobile", "052-8119308");
--- INSERT INTO phones VALUES (3, 1, "Mobile", "052-8119308")
+INSERT INTO addresses VALUES (1, 1, "Home", "Revava", "bla", "10", "9");
+INSERT INTO addresses VALUES (2, 1, "Work", "Tel Aviv", "bla", "10", "9");
+INSERT INTO phones VALUES (1, 1, "Mobile", "052-8119308");
+INSERT INTO phones VALUES (2, 1, "Mobile", "052-8119308");
+INSERT INTO phones VALUES (3, 1, "Mobile", "052-8119308")

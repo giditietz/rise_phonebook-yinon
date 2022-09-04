@@ -1,83 +1,15 @@
 package server
 
 import (
-	"database/sql"
 	"fmt"
 	"net/http"
+	"phonebook/server/entities"
 	serverutils "phonebook/server/server_utils"
 	"phonebook/setup"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
-
-type ContactQuery struct {
-	ContactID int    `json:"ContactID"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-}
-
-type AddressQuery struct {
-	AddressID   sql.NullInt32  `json:"addressID"`
-	Description sql.NullString `json:"description"`
-	City        sql.NullString `json:"city"`
-	Street      sql.NullString `json:"street"`
-	HomeNumber  sql.NullString `json:"home_number"`
-	Apartment   sql.NullString `json:"apartment"`
-}
-
-type PhoneQuery struct {
-	PhoneID     sql.NullInt32  `json:"phoneID"`
-	Description sql.NullString `json:"description"`
-	PhoneNumber sql.NullString `json:"PhoneNumber"`
-}
-
-type ContactRequestBody struct {
-	FirstName  string               `json:"first_name"`
-	LastName   string               `json:"last_name"`
-	AddressReq []AddressRequestBody `json:"address"`
-	PhoneReq   []PhoneRequestBody   `json:"phone"`
-}
-
-type AddressRequestBody struct {
-	ContactID   int    `json:"contactID"`
-	AddressID   int    `json:"addressID"`
-	Description string `json:"description"`
-	City        string `json:"city"`
-	Street      string `json:"street"`
-	HomeNumber  string `json:"home_number"`
-	Apartment   string `json:"apartment"`
-}
-
-type PhoneRequestBody struct {
-	ContactID   int    `json:"contactID"`
-	PhoneID     int    `json:"phoneID"`
-	Description string `json:"description"`
-	PhoneNumber string `json:"phone_number"`
-}
-
-type ContactResponseBody struct {
-	ContactID  int                   `json:"contactID"`
-	FirstName  string                `json:"firstName"`
-	LastName   string                `json:"lastName"`
-	AddressRes []AddressResponseBody `json:"address"`
-	PhoneRes   []PhoneResponseBody   `json:"phone"`
-}
-
-type AddressResponseBody struct {
-	AddressID   int    `json:"AddressID"`
-	Description string `json:"description"`
-	City        string `json:"city"`
-	Street      string `json:"street"`
-	HomeNumber  string `json:"home_number"`
-	Apartment   string `json:"apartment"`
-}
-
-type PhoneResponseBody struct {
-	PhoneID     int    `json:"PhoneID"`
-	Description string `json:"description"`
-	PhoneNumber string `json:"phone_number"`
-}
 
 const (
 	sqlQueryGetAll        = "getAll"
@@ -128,14 +60,14 @@ func GetAllContacts(c *gin.Context) {
 	rows, err := db.Query(getAllQuery)
 	defer rows.Close()
 
-	contacts := make(map[int]ContactResponseBody)
+	contacts := make(map[int]entities.ContactResponseBody)
 	phones := make(map[int]bool)
 	addresses := make(map[int]bool)
 
 	for rows.Next() {
-		var contact ContactResponseBody
-		var address AddressQuery
-		var phone PhoneQuery
+		var contact entities.ContactResponseBody
+		var address entities.AddressQuery
+		var phone entities.PhoneQuery
 
 		if err := rows.Scan(&contact.ContactID, &contact.FirstName, &contact.LastName,
 			&address.AddressID, &address.Description, &address.City, &address.Street,
@@ -195,14 +127,14 @@ func SearchContact(c *gin.Context) {
 	rows, err := db.Query(getSearchQuery)
 	defer rows.Close()
 
-	contacts := make(map[int]ContactResponseBody)
+	contacts := make(map[int]entities.ContactResponseBody)
 	phones := make(map[int]bool)
 	addresses := make(map[int]bool)
 
 	for rows.Next() {
-		var contact ContactResponseBody
-		var address AddressQuery
-		var phone PhoneQuery
+		var contact entities.ContactResponseBody
+		var address entities.AddressQuery
+		var phone entities.PhoneQuery
 
 		if err := rows.Scan(&contact.ContactID, &contact.FirstName, &contact.LastName,
 			&address.AddressID, &address.Description, &address.City, &address.Street,
@@ -237,17 +169,17 @@ func keyExist(m map[int]bool, key int) bool {
 	return m[key]
 }
 
-func updatePhone(contact *ContactResponseBody, phones map[int]bool, phone *PhoneResponseBody) {
+func updatePhone(contact *entities.ContactResponseBody, phones map[int]bool, phone *entities.PhoneResponseBody) {
 	*&contact.PhoneRes = append(contact.PhoneRes, *phone)
 	updateRecordExist(phones, phone.PhoneID)
 }
 
-func updateAddress(contact *ContactResponseBody, addresses map[int]bool, address *AddressResponseBody) {
+func updateAddress(contact *entities.ContactResponseBody, addresses map[int]bool, address *entities.AddressResponseBody) {
 	*&contact.AddressRes = append(contact.AddressRes, *address)
 	updateRecordExist(addresses, address.AddressID)
 }
 
-func updateContact(contacts map[int]ContactResponseBody, contact *ContactResponseBody) {
+func updateContact(contacts map[int]entities.ContactResponseBody, contact *entities.ContactResponseBody) {
 	contacts[contact.ContactID] = *contact
 }
 
@@ -255,8 +187,8 @@ func updateRecordExist(recordMap map[int]bool, key int) {
 	recordMap[key] = true
 }
 
-func parseAddressQueryToResponse(address *AddressQuery) *AddressResponseBody {
-	var ret AddressResponseBody
+func parseAddressQueryToResponse(address *entities.AddressQuery) *entities.AddressResponseBody {
+	var ret entities.AddressResponseBody
 
 	ret.AddressID = int(address.AddressID.Int32)
 	ret.Description = address.Description.String
@@ -268,8 +200,8 @@ func parseAddressQueryToResponse(address *AddressQuery) *AddressResponseBody {
 	return &ret
 }
 
-func parsePhoneQueryToResponse(phone *PhoneQuery) *PhoneResponseBody {
-	var ret PhoneResponseBody
+func parsePhoneQueryToResponse(phone *entities.PhoneQuery) *entities.PhoneResponseBody {
+	var ret entities.PhoneResponseBody
 
 	ret.PhoneID = int(phone.PhoneID.Int32)
 	ret.Description = phone.Description.String
@@ -280,7 +212,7 @@ func parsePhoneQueryToResponse(phone *PhoneQuery) *PhoneResponseBody {
 
 func CreateContact(c *gin.Context) {
 	db := setup.GetDBConn()
-	var newContact ContactRequestBody
+	var newContact entities.ContactRequestBody
 
 	if err := c.BindJSON(&newContact); err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, err)
@@ -344,7 +276,7 @@ func EditContact(c *gin.Context) {
 	db := setup.GetDBConn()
 	contactID := c.Param(ginParamId)
 
-	var editContact ContactRequestBody
+	var editContact entities.ContactRequestBody
 
 	if err := c.BindJSON(&editContact); err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, err)
@@ -399,7 +331,7 @@ func EditContact(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, contactID)
 }
 
-func prepareContactUpdateQuery(contact *ContactRequestBody) string {
+func prepareContactUpdateQuery(contact *entities.ContactRequestBody) string {
 	var ret string
 	var isSeparatorNeeded bool
 	if contact.FirstName != "" {
@@ -418,15 +350,15 @@ func prepareContactUpdateQuery(contact *ContactRequestBody) string {
 	return ret
 }
 
-func isPhoneExist(phone *PhoneRequestBody) bool {
+func isPhoneExist(phone *entities.PhoneRequestBody) bool {
 	return phone.PhoneID != 0
 }
 
-func isAddressExist(address *AddressRequestBody) bool {
+func isAddressExist(address *entities.AddressRequestBody) bool {
 	return address.AddressID != 0
 }
 
-func preparePhoneUpdateQuery(phone *PhoneRequestBody) string {
+func preparePhoneUpdateQuery(phone *entities.PhoneRequestBody) string {
 	ret, _ := serverutils.GetQuery(sqlQueryEditPhone)
 	var isSeparatorNeeded bool
 	if phone.Description != "" {
@@ -442,7 +374,7 @@ func preparePhoneUpdateQuery(phone *PhoneRequestBody) string {
 	return ret
 }
 
-func prepareAddressUpdateQuery(address *AddressRequestBody) string {
+func prepareAddressUpdateQuery(address *entities.AddressRequestBody) string {
 	ret, _ := serverutils.GetQuery(sqlQueryEditAddress)
 	var isSeparatorNeeded bool
 	if address.Description != "" {
