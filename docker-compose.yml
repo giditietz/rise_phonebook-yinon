@@ -1,0 +1,27 @@
+version: '3.9'
+
+services:
+  db:
+    image: mysql:8
+    ports:
+      - 8596:3306
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
+    environment:
+      DBUSER: root
+      MYSQL_ROOT_PASSWORD: rise
+      DBPORT: 8596
+      DBPASS: rise
+      DBNAME: phonebook
+      DBURL: "127.0.0.1"
+      MYSQL_USER: stam
+
+  server:
+    image: server
+    build: 
+      context: .
+      dockerfile: ./Dockerfile_server
+    depends_on:
+      - db
+    ports:
+      - 9000:9000

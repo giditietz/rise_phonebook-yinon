@@ -1,3 +1,4 @@
+CREATE SCHEMA phonebook;
 USE phonebook;
 
 DROP TABLE IF EXISTS addresses;
