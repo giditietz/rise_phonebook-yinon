@@ -20,6 +20,16 @@ type contactController struct {
 	service service.ContactService
 }
 
+const (
+	queryErrorString = "query not exist"
+)
+
+type QueryError struct{}
+
+func (queryError *QueryError) Error() string {
+	return queryErrorString
+}
+
 func NewContactController(service service.ContactService) ContactController {
 	return &contactController{
 		service: service,
@@ -80,8 +90,14 @@ func (controller *contactController) Edit(c *gin.Context) error {
 }
 
 func (controller *contactController) Search(c *gin.Context) ([]entities.ContactResponseBody, error) {
-	firstName, _ := c.GetQuery(ginQueryFirstName)
-	lastName, _ := c.GetQuery(ginQueryLastName)
+	firstName, queryExist := c.GetQuery(ginQueryFirstName)
+	if !queryExist {
+		return nil, &QueryError{}
+	}
+	lastName, queryExist := c.GetQuery(ginQueryLastName)
+	if !queryExist {
+		return nil, &QueryError{}
+	}
 	pageNum, err := strconv.Atoi(c.DefaultQuery(ginQueryPage, ginDefaultPageStart))
 	if err != nil {
 		return nil, err
