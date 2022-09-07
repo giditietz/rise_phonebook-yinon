@@ -12,14 +12,16 @@ services:
       MYSQL_DATABASE: "phonebook"
       MYSQL_USER: "rise"
       MYSQL_PASSWORD: "shine"
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
 
   server:
     image: server
     build: 
       context: .
-      dockerfile: ./Dockerfile_server
-    depends_on:
-      - db
+      dockerfile: ./Dockerfile.server
+    depends_on: 
+      db:
+        condition: service_healthy
     ports:
       - 9000:9000
-    command: sh -c "dockerize -wait tcp://db:3306 -timeout 300s -wait-retry-interval 30s /app/main/main"

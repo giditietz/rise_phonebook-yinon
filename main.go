@@ -16,10 +16,5 @@ func main() {
 		log.Fatalf("error ping to DB %v", pingErr)
 	}
 
-	err := setup.InitSchema()
-	if err != nil {
-		log.Fatalf("error init schema %v", err)
-	}
-
 	server.InitRoutes()
 }
