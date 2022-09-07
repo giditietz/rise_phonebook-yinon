@@ -1,14 +1,18 @@
 import { useState } from "react";
-import TextBox from "../../components/Textbox";
-import Title from "../../components/Title";
+import httpRequest from "../../utils/httpRequest/httpRequest";
+import ContactFields from "./ContactField";
 
 const AddForm = () => {
   const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+
   return (
-    <div>
-      <Title title={"First Name"} />
-      <TextBox value={firstName} onChange={setFirstName} />
-    </div>
+    <ContactFields
+      firstName={firstName}
+      setFirstName={setFirstName}
+      lastName={lastName}
+      setLastName={setLastName}
+    />
   );
 };
 

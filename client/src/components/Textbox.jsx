@@ -1,12 +1,12 @@
 import TextField from "@mui/material/TextField";
 
-const TextBox = ({ value, onChange }) => {
+const TextBox = ({ label, value, onChange }) => {
   return (
     <TextField
       value={value}
       onChange={(e) => onChange(e.target.value)}
       id="standard-basic"
-      label="Standard"
+      label={label}
       variant="standard"
     />
   );

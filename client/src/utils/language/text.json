@@ -1,0 +1,8 @@
+{
+    "firstName": "First name",
+    "lastName": "Last name",
+    "phoneNumber": "Phone number",
+    "gridTitle": ["First name", "Last name", "Phone number", "Address"],
+    "phoneSubTitle": ["Description", "Phone number"],
+    "addressSubTitle": ["Description", "City", "Street", "Apartment", "Home Number"]
+}
