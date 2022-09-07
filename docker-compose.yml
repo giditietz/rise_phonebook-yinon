@@ -17,6 +17,8 @@ services:
 
   server:
     image: server
+    volumes:
+      - ./logs:/app/main/logs/ 
     build: 
       context: .
       dockerfile: ./Dockerfile.server
@@ -25,3 +27,14 @@ services:
         condition: service_healthy
     ports:
       - 9000:9000
+      - 9001:9001
+
+  client:
+    image: client
+    build: 
+      context: .
+      dockerfile: ./Dockerfile.client
+    depends_on: 
+      - server
+    ports:
+      - 3000:3000

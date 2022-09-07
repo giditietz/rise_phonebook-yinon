@@ -20,5 +20,18 @@ func InitRoutes() {
 		api.GET("/contacts/search", SearchContact)
 	}
 
-	server.Run("0.0.0.0:9000")
+	go server.Run("0.0.0.0:9000")
+	second_server := gin.New()
+
+	second_server.Use(gin.Recovery(), middlewares.Logger(), middlewares.CORSMiddleware())
+
+	second_api := second_server.Group("/api")
+	{
+		second_api.GET("/contacts", GetAllContacts)
+		second_api.POST("/contacts", CreateContact)
+		second_api.DELETE("/contacts/:id", DeleteContact)
+		second_api.PUT("/contacts/:id", EditContact)
+		second_api.GET("/contacts/search", SearchContact)
+	}
+	second_server.Run("0.0.0.0:9001")
 }

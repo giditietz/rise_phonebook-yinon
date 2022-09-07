@@ -1,0 +1,9 @@
+FROM node:14-alpine
+
+WORKDIR '/app'
+COPY ./client/public ./public
+COPY ./client/src ./src
+COPY ./client/package.json .
+RUN npm install
+
+CMD [ "npm", "run", "start" ]
