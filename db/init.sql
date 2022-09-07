@@ -1,6 +1,3 @@
-CREATE SCHEMA phonebook;
-USE phonebook;
-
 DROP TABLE IF EXISTS addresses;
 DROP TABLE IF EXISTS phones;
 DROP TABLE IF EXISTS contacts;

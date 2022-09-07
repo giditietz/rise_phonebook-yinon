@@ -9,7 +9,7 @@ import (
 func InitRoutes() {
 	server := gin.New()
 
-	server.Use(gin.Recovery(), middlewares.Logger())
+	server.Use(gin.Recovery(), middlewares.Logger(), middlewares.CORSMiddleware())
 
 	api := server.Group("/api")
 	{
@@ -20,5 +20,5 @@ func InitRoutes() {
 		api.GET("/contacts/search", SearchContact)
 	}
 
-	server.Run("localhost:9000")
+	server.Run("0.0.0.0:9000")
 }

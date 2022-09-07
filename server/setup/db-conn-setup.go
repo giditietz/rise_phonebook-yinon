@@ -35,10 +35,11 @@ func ConnectToDB() (openError, pingError error) {
 		Addr:   goDotEnvVariable("DBURL"),
 		DBName: "phonebook",
 	}
-	// Get a database handle.
+
 	fmt.Println(cfg.FormatDSN())
+	// Get a database handle.
 	var err error
-	db, err = sql.Open("mysql", "root:rise@tcp(127.0.0.1:8596)/phonebook?allowNativePasswords=false&checkConnLiveness=false&maxAllowedPacket=0")
+	db, err = sql.Open("mysql", "rise:shine@tcp(db:3306)/phonebook")
 	if err != nil {
 		return err, nil
 	}
