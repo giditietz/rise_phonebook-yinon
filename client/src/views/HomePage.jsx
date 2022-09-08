@@ -5,7 +5,7 @@ import "./home-page.scss";
 const HomePage = () => {
   return (
     <div className="home-page-container">
-      <AddForm />
+      {/* <AddForm /> */}
       <ContactList />
     </div>
   );
