@@ -3,6 +3,7 @@ package service
 const (
 	sqlQueryWhere             = "where"
 	sqlQueryAnd               = "and"
+	sqlQueryOr                = "or"
 	sqlQueryGetAll            = "getAllContact"
 	sqlQueryInsertContact     = "insertContact"
 	sqlQueryInsertAddress     = "insertAddress"
@@ -14,6 +15,7 @@ const (
 	sqlQueryEditPhone         = "editPhone"
 	sqlQueryEditAddress       = "editAddress"
 	sqlQueryGetNumOfContacts  = "getNumOfContacts"
+	sqlQueryRegex             = "regex"
 	sqlSeparatorValues        = ", "
 )
 

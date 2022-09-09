@@ -95,14 +95,10 @@ func (controller *contactController) GetContactNum() (int, error) {
 }
 
 func (controller *contactController) Search(c *gin.Context) ([]entities.ContactResponseBody, error) {
-	firstName, queryExist := c.GetQuery(ginQueryFirstName)
-	if !queryExist {
-		return nil, &QueryError{}
-	}
-	lastName, queryExist := c.GetQuery(ginQueryLastName)
-	if !queryExist {
-		return nil, &QueryError{}
-	}
+	firstName, _ := c.GetQuery(ginQueryFirstName)
+
+	lastName, _ := c.GetQuery(ginQueryLastName)
+
 	pageNum, err := strconv.Atoi(c.DefaultQuery(ginQueryPage, ginDefaultPageStart))
 	if err != nil {
 		return nil, err

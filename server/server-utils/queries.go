@@ -36,6 +36,8 @@ var queryMap = map[string]string{
 	"where": " WHERE ",
 	"limit": " LIMIT",
 	"and":   " AND ",
+	"or":    " OR ",
+	"regex": " REGEXP ",
 }
 
 const (
@@ -57,6 +59,11 @@ func GetQuery(key string) (string, error) {
 
 func AddValuesToQuery(fieldName string, value string) string {
 	return fmt.Sprintf(" %s = \"%s\" ", fieldName, value)
+}
+
+func RegexQuery(fieldName string, regex string) string {
+	regexQuery, _ := GetQuery("regex")
+	return fmt.Sprintf(" %s %s %s ", fieldName, regexQuery, regex)
 }
 
 func GetLimitQuery(offset int, limit int) (string, error) {

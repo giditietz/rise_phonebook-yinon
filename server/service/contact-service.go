@@ -124,22 +124,24 @@ func prepareSearchParameterQuery(firstName string, lastName string) (string, err
 	if err != nil {
 		return "", err
 	}
-	andQuery, err := serverutils.GetQuery(sqlQueryAnd)
+	orQuery, err := serverutils.GetQuery(sqlQueryOr)
 	if err != nil {
 		return "", err
 	}
 	isFirstNameSearch := false
 	if firstName != "" {
 		ret += whereQuery
-		ret += serverutils.AddValuesToQuery(firstNameFieldInDB, firstName)
+		firstNameRegexQuery := fmt.Sprintf("'%s'", firstName)
+		ret += serverutils.RegexQuery(firstNameFieldInDB, firstNameRegexQuery)
 	}
 	if lastName != "" {
 		if isFirstNameSearch {
-			ret += andQuery
+			ret += orQuery
 		} else {
 			ret += whereQuery
 		}
-		ret += serverutils.AddValuesToQuery(lastNameFieldInDB, lastName)
+		lastNameRegexQuery := fmt.Sprintf("'%s'", lastName)
+		ret += serverutils.RegexQuery(lastNameFieldInDB, lastNameRegexQuery)
 	}
 	return ret, nil
 }
