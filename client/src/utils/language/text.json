@@ -24,6 +24,8 @@
   "save": "Save",
   "addPhones": "Add Phones",
   "addAddress": "Add Address",
+  "addresses": "Addresses",
+  "phones": "Phones",
   "city": "City",
   "street": "Street",
   "homeNumber": "Home number",

@@ -144,7 +144,11 @@ const ContactForm = ({ contact, isShow, isNew, isEdit, handleSubmit }) => {
         />
       </div>
       {phones?.length ? (
-        <h1 className="add-content">{text.addPhones}</h1>
+        isShow ? (
+          <h1 className="add-content">{text.phones}</h1>
+        ) : (
+          <h1 className="add-content">{text.addPhones}</h1>
+        )
       ) : null}
       {phones?.length
         ? phones?.map((phone, index) => (
@@ -159,7 +163,11 @@ const ContactForm = ({ contact, isShow, isNew, isEdit, handleSubmit }) => {
           ))
         : null}
       {addresses?.length ? (
-        <h1 className="add-content">{text.addAddress}</h1>
+        isShow ? (
+          <h1 className="add-content">{text.addresses}</h1>
+        ) : (
+          <h1 className="add-content">{text.addAddress}</h1>
+        )
       ) : null}
       {addresses?.length
         ? addresses.map((address, index) => (

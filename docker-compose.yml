@@ -18,6 +18,7 @@ services:
 
   server:
     image: server
+    restart: always
     volumes:
       - ./logs:/app/main/logs/ 
     build: 
