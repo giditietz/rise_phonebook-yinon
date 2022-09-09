@@ -1,0 +1,16 @@
+.form-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-field {
+    display: flex;
+    align-items: baseline;
+    margin: 13px;
+    justify-content: space-evenly;
+}
+
+.add-content {
+    display: flex;
+    justify-content: center;
+}

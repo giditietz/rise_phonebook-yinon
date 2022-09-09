@@ -14,19 +14,14 @@ import "./contact-list.scss";
 
 import text from "../../utils/language/text.json";
 
-const ContactList = () => {
+const ContactList = ({ page }) => {
   const [data, setData] = useState([]);
-  const [page, setPage] = useState(0);
 
   useEffect(() => {
-    httpRequest.get(`/contacts?page=${page}`).then((res) => setData(res.data));
+    httpRequest
+      .get(`/contacts?page=${page - 1}`)
+      .then((res) => setData(res.data));
   }, [page]);
-
-  const getMaxContactItem = (item) => {
-    return item?.phone?.length < item?.address?.length
-      ? item?.address?.length
-      : item?.phone?.length;
-  };
 
   const getColSpan = {
     "First name": 1,
@@ -42,6 +37,7 @@ const ContactList = () => {
   };
 
   const mergeSubTitle = [...text.phoneSubTitle, ...text.addressSubTitle];
+
   return (
     <div className="table-container">
       <TableContainer component={Paper}>
@@ -77,34 +73,34 @@ const ContactList = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {data.map((item) => (
+            {data?.map((item) => (
               <TableRow
-                key={item.contactID}
+                key={item?.contactID}
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
-                <TableCell
-                  component="th"
-                  scope="row"
-                  rowSpan={getMaxContactItem(item)}
-                >
-                  {item.firstName}
+                <TableCell align="center">{item?.firstName}</TableCell>
+                <TableCell align="center">{item?.lastName}</TableCell>
+                <TableCell align="center">
+                  {item?.phone?.length ? item.phone[0].description : ""}
                 </TableCell>
-                <TableCell align="right" rowSpan={getMaxContactItem(item)}>{item.lastName}</TableCell>
-                {item?.phone?.length
-                  ? item.phone.map((phone) => {
-                      <>
-                        <TableCell align="right">{phone.description}</TableCell>
-                        <TableCell align="right">
-                          {phone.phone_number}
-                        </TableCell>
-                      </>;
-                    })
-                  : <><TableCell align="right"></TableCell>
-                  <TableCell align="right"></TableCell>
-                  </>}
-                {/* {item.address ? (
-                <TableCell align="right">{item.address[0]}</TableCell>
-              ) : null} */}
+                <TableCell align="left">
+                  {item?.phone?.length ? item.phone[0].phone_number : ""}
+                </TableCell>
+                <TableCell align="center">
+                  {item?.address?.length ? item.address[0].description : ""}
+                </TableCell>
+                <TableCell align="left">
+                  {item?.address?.length ? item.address[0].city : ""}
+                </TableCell>
+                <TableCell align="left">
+                  {item?.address?.length ? item.address[0].street : ""}
+                </TableCell>
+                <TableCell align="center">
+                  {item?.address?.length ? item.address[0].home_number : ""}
+                </TableCell>
+                <TableCell align="center">
+                  {item?.address?.length ? item.address[0].apartment : ""}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

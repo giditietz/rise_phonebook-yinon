@@ -7,7 +7,7 @@ const TextBox = ({ label, value, onChange }) => {
       onChange={(e) => onChange(e.target.value)}
       id="standard-basic"
       label={label}
-      variant="standard"
+      variant="outlined"
     />
   );
 };
