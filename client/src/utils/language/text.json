@@ -13,5 +13,6 @@
     "city": "City",
     "street": "Street",
     "homeNumber": "Home number",
-    "apartment": "Apartment"
+    "apartment": "Apartment",
+    "submit": "Submit"
 }

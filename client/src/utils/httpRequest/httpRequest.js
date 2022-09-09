@@ -8,8 +8,13 @@ const get = (path) => {
   return axiosInstance.get(path);
 };
 
+const post = (path, data) => {
+  return axiosInstance.post(path, data);
+};
+
 const httpRequest = {
   get,
+  post,
 };
 
 export default httpRequest;

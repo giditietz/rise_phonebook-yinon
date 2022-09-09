@@ -1,11 +1,16 @@
 import { useState } from "react";
 
-import FormField from "../../components/FormField";
-import text from "../../utils/language/text.json";
+import SaveIcon from "@mui/icons-material/Save";
+import Button from "@mui/material/Button";
 
-import "./add-form.scss";
+import FormField from "../../components/FormField";
 import AddressRow from "./AddressRow";
 import PhoneRow from "./PhoneRow";
+
+import httpRequest from "../../utils/httpRequest/httpRequest";
+
+import text from "../../utils/language/text.json";
+import "./add-form.scss";
 
 const AddForm = () => {
   const [firstName, setFirstName] = useState("");
@@ -61,6 +66,50 @@ const AddForm = () => {
     setAddresses(newAddressArray);
   };
 
+  const onSubmit = () => {
+    if (phones[phones.length - 1].phoneNumber === "") {
+      phones.pop();
+    }
+    if (addresses[addresses.length - 1].city === "") {
+      addresses.pop();
+    }
+    const phoneArr = phones;
+    const addressArr = addresses;
+    const newContact = {
+      first_name: firstName,
+      last_name: lastName,
+      address: addressArr,
+      phone: phoneArr,
+    };
+    if (newContact.address.length !== 0) {
+      console.log(addressArr);
+      newContact.address = addressArr?.map((item) => {
+        const addressJsonObject = { ...item };
+        const temp = item.apartment;
+        addressJsonObject.home_number = item.homeNumber;
+        delete addressJsonObject.homeNumber;
+        delete addressJsonObject.apartment;
+        addressJsonObject.apartment = temp;
+        return { ...addressJsonObject };
+      });
+    } else {
+      delete newContact.address;
+    }
+    if (newContact.phone.length !== 0) {
+      newContact.phone = phoneArr?.map((item) => {
+        const phoneJsonObject = { ...item };
+        phoneJsonObject.phone_number = item.phoneNumber;
+        delete phoneJsonObject.phoneNumber;
+        return { ...phoneJsonObject };
+      });
+    } else {
+      delete newContact.phone;
+    }
+    console.log(newContact);
+    console.log(JSON.stringify(newContact));
+    httpRequest.post("/contacts", newContact);
+  };
+
   return (
     <div className="form-container">
       <div className="form-field">
@@ -100,6 +149,14 @@ const AddForm = () => {
           onAddressSave={onAddressSave}
         />
       ))}
+      <Button
+        onClick={onSubmit}
+        style={{ textTransform: "none" }}
+        variant="contained"
+        startIcon={<SaveIcon />}
+      >
+        {text.submit}
+      </Button>
     </div>
   );
 };
