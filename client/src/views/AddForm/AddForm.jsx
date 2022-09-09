@@ -4,8 +4,8 @@ import SaveIcon from "@mui/icons-material/Save";
 import Button from "@mui/material/Button";
 
 import FormField from "../../components/FormField";
-import AddressRow from "./AddressRow";
-import PhoneRow from "./PhoneRow";
+import AddressRow from "./AddressRow/AddressRow";
+import PhoneRow from "./PhoneRow/PhoneRow";
 
 import httpRequest from "../../utils/httpRequest/httpRequest";
 
@@ -151,7 +151,7 @@ const AddForm = () => {
       ))}
       <Button
         onClick={onSubmit}
-        style={{ textTransform: "none" }}
+        style={{ textTransform: "none", width: "60%", left: "20%" }}
         variant="contained"
         startIcon={<SaveIcon />}
       >

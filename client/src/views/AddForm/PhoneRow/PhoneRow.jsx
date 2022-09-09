@@ -1,9 +1,9 @@
 import { useState } from "react";
 import SaveIcon from "@mui/icons-material/Save";
 import Button from "@mui/material/Button";
-import FormField from "../../components/FormField";
+import FormField from "../../../components/FormField";
 
-import text from "../../utils/language/text.json";
+import text from "../../../utils/language/text.json";
 
 import "./phone-row.scss";
 

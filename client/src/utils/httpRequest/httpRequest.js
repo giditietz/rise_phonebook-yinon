@@ -11,10 +11,14 @@ const get = (path) => {
 const post = (path, data) => {
   return axiosInstance.post(path, data);
 };
+const del = (path) => {
+  return axiosInstance.delete(path);
+};
 
 const httpRequest = {
   get,
   post,
+  del,
 };
 
 export default httpRequest;

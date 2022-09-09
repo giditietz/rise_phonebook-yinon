@@ -1,18 +1,32 @@
 {
-    "firstName": "First name",
-    "lastName": "Last name",
-    "phoneNumber": "Phone number",
-    "description": "Description",
-    "gridTitle": ["First name", "Last name", "Phone number", "Address"],
-    "phoneSubTitle": ["Description", "Phone number"],
-    "addressSubTitle": ["Description", "City", "Street", "Apartment", "Home Number"],
-    "addContact": "Add new contact",
-    "save": "Save",
-    "addPhones": "Add Phones",
-    "addAddress": "Add Address",
-    "city": "City",
-    "street": "Street",
-    "homeNumber": "Home number",
-    "apartment": "Apartment",
-    "submit": "Submit"
+  "firstName": "First name",
+  "lastName": "Last name",
+  "phoneNumber": "Phone number",
+  "description": "Description",
+  "gridTitle": [
+    "First name",
+    "Last name",
+    "Phone number",
+    "Address",
+    "Delete",
+    "Edit"
+  ],
+  "phoneSubTitle": ["Description", "Phone number"],
+  "addressSubTitle": [
+    "Description",
+    "City",
+    "Street",
+    "Apartment",
+    "Home Number"
+  ],
+  "addContact": "Add new contact",
+  "save": "Save",
+  "addPhones": "Add Phones",
+  "addAddress": "Add Address",
+  "city": "City",
+  "street": "Street",
+  "homeNumber": "Home number",
+  "apartment": "Apartment",
+  "submit": "Submit",
+  "delete": "Delete"
 }
