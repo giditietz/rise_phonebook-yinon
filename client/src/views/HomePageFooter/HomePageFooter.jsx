@@ -6,11 +6,11 @@ import text from "../../utils/language/text.json";
 
 import "./home-page-footer.scss";
 
-const HomePageFooter = ({ page, setPage, onAddClick }) => {
+const HomePageFooter = ({ page, setPage, onAddClick, numOfPages }) => {
   return (
     <div className="home-page-footer">
       <Pagination
-        count={10}
+        count={numOfPages}
         page={page}
         onChange={(event, value) => setPage(value)}
         color="primary"

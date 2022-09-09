@@ -13,6 +13,7 @@ const (
 	sqlQueryGetContactPhones  = "getContactPhones"
 	sqlQueryEditPhone         = "editPhone"
 	sqlQueryEditAddress       = "editAddress"
+	sqlQueryGetNumOfContacts  = "getNumOfContacts"
 	sqlSeparatorValues        = ", "
 )
 

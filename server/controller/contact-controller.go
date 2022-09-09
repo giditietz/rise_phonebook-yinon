@@ -14,6 +14,7 @@ type ContactController interface {
 	Save(c *gin.Context) (int, error)
 	Delete(c *gin.Context) error
 	Edit(c *gin.Context) error
+	GetContactNum() (int, error)
 }
 
 type contactController struct {
@@ -87,6 +88,10 @@ func (controller *contactController) Edit(c *gin.Context) error {
 	}
 
 	return controller.service.Edit(&updateContact, contactID)
+}
+
+func (controller *contactController) GetContactNum() (int, error) {
+	return controller.service.GetContactNum()
 }
 
 func (controller *contactController) Search(c *gin.Context) ([]entities.ContactResponseBody, error) {

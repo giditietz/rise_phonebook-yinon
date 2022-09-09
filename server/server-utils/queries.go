@@ -30,9 +30,12 @@ var queryMap = map[string]string{
 					) 
 					VALUES (?, ?, ?)`,
 	"editPhone": `UPDATE phones SET `,
-	"where":     " WHERE ",
-	"limit":     " LIMIT",
-	"and":       " AND ",
+	"getNumOfContacts": `SELECT 
+						 COUNT(contact_id)
+						 FROM contacts`,
+	"where": " WHERE ",
+	"limit": " LIMIT",
+	"and":   " AND ",
 }
 
 const (

@@ -59,3 +59,12 @@ func SearchContact(c *gin.Context) {
 	}
 	c.IndentedJSON(http.StatusOK, contacts)
 }
+
+func GetNumOfContact(c *gin.Context) {
+	contactsNum, err := contactController.GetContactNum()
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, err)
+		return
+	}
+	c.IndentedJSON(http.StatusOK, contactsNum)
+}

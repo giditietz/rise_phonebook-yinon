@@ -1,4 +1,4 @@
-import { useState, useEffect, useReducer } from "react";
+import { useState, useEffect } from "react";
 
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -18,7 +18,6 @@ import text from "../../utils/language/text.json";
 
 const ContactList = ({ page }) => {
   const [data, setData] = useState([]);
-  const [_, forceUpdate] = useReducer((x) => x + 1, 0);
 
   useEffect(() => {
     httpRequest

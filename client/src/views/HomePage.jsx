@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import AddForm from "./AddForm/AddForm";
 import ContactList from "./ContactList/ContactList";
@@ -6,6 +6,7 @@ import HomePageFooter from "./HomePageFooter/HomePageFooter";
 import Modal from "react-modal";
 
 import "./home-page.scss";
+import httpRequest from "../utils/httpRequest/httpRequest";
 
 const customStyles = {
   content: {
@@ -23,6 +24,20 @@ const customStyles = {
 const HomePage = () => {
   const [page, setPage] = useState(1);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [contactNum, setContactNum] = useState(0);
+
+  const resultPerPage = 10;
+
+  useEffect(() => {
+    httpRequest
+      .get(`/contacts/contact-num`)
+      .then((res) => setContactNum(res.data));
+  }, [page]);
+
+  const getNumOfPage = () => {
+    return Math.ceil(contactNum / resultPerPage);
+  };
+
   return (
     <>
       <Modal
@@ -35,6 +50,7 @@ const HomePage = () => {
       <div className="home-page-container">
         <ContactList page={page} />
         <HomePageFooter
+          numOfPages={getNumOfPage()}
           page={page}
           setPage={setPage}
           onAddClick={() => setIsAddModalOpen(true)}

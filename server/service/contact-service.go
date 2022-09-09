@@ -16,6 +16,7 @@ type ContactService interface {
 	Delete(contactID int) error
 	Edit(updateContact *entities.ContactRequestBody, contactID int) error
 	Search(firstName string, lastName string, pageNum int) ([]entities.ContactResponseBody, error)
+	GetContactNum() (int, error)
 }
 
 type contactService struct {
@@ -318,4 +319,21 @@ func isPhoneExist(phone *entities.PhoneRequestBody) bool {
 
 func isAddressExist(address *entities.AddressRequestBody) bool {
 	return address.AddressID != 0
+}
+
+func (contactService *contactService) GetContactNum() (int, error) {
+	db := setup.GetDBConn()
+	var ret int
+	queryGetNumOfContacts, err := serverutils.GetQuery(sqlQueryGetNumOfContacts)
+	if err != nil {
+		return 0, err
+	}
+
+	row := db.QueryRow(queryGetNumOfContacts)
+	err = row.Scan(&ret)
+	if err != nil {
+		return 0, err
+	}
+	return ret, nil
+
 }
