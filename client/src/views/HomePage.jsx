@@ -25,13 +25,27 @@ const HomePage = () => {
   const [page, setPage] = useState(1);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [contactNum, setContactNum] = useState(0);
+  const [firstNameSearchParam, setFirstNameSearchParam] = useState("");
+  const [lastNameSearchParam, setLastNameSearchParam] = useState("");
+  const [data, setData] = useState([]);
 
   const resultPerPage = 10;
 
-  useEffect(() => {
+  const getData = () => {
+    httpRequest
+      .get(
+        `/contacts?page=${
+          page - 1
+        }&first_name=${firstNameSearchParam}&last_name=${lastNameSearchParam}`
+      )
+      .then((res) => setData(res.data));
     httpRequest
       .get(`/contacts/contact-num`)
       .then((res) => setContactNum(res.data));
+  };
+
+  useEffect(() => {
+    getData();
   }, [page]);
 
   const getNumOfPage = () => {
@@ -48,7 +62,7 @@ const HomePage = () => {
         <AddForm />
       </Modal>
       <div className="home-page-container">
-        <ContactList page={page} />
+        <ContactList data={data} getData={() => getData()} />
         <HomePageFooter
           numOfPages={getNumOfPage()}
           page={page}

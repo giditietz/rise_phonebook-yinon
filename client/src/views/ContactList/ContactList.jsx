@@ -16,15 +16,7 @@ import "./contact-list.scss";
 
 import text from "../../utils/language/text.json";
 
-const ContactList = ({ page }) => {
-  const [data, setData] = useState([]);
-
-  useEffect(() => {
-    httpRequest
-      .get(`/contacts?page=${page - 1}`)
-      .then((res) => setData(res.data));
-  }, [page]);
-
+const ContactList = ({ data, getData }) => {
   const getColSpan = {
     "First name": 1,
     "Last name": 1,
@@ -45,11 +37,7 @@ const ContactList = ({ page }) => {
   const mergeSubTitle = [...text.phoneSubTitle, ...text.addressSubTitle];
 
   const onDelete = (item) => {
-    httpRequest.del(`/contacts/${item.contactID}`).then(
-      httpRequest.get(`/contacts?page=${page - 1}`).then((res) => {
-        setData(res.data);
-      })
-    );
+    httpRequest.del(`/contacts/${item.contactID}`).then((res) => getData());
   };
 
   return (
