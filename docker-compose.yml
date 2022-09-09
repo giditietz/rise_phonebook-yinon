@@ -7,7 +7,7 @@ services:
       - 3306:3306
     volumes:
       - ./db:/docker-entrypoint-initdb.d
-      - ./data:/var/lib/mysql
+      - data:/var/lib/mysql
     environment:
       MYSQL_RANDOM_ROOT_PASSWORD: "secret"
       MYSQL_DATABASE: "phonebook"
@@ -40,3 +40,5 @@ services:
       - server
     ports:
       - 3000:3000
+volumes:
+  data:
