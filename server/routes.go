@@ -13,11 +13,10 @@ func InitRoutes() {
 
 	api := server.Group("/api")
 	{
-		api.GET("/contacts", GetAllContacts)
+		api.GET("/contacts", SearchContact)
 		api.POST("/contacts", CreateContact)
 		api.DELETE("/contacts/:id", DeleteContact)
 		api.PUT("/contacts/:id", EditContact)
-		api.GET("/contacts/search", SearchContact)
 		api.GET("/contacts/contact-num", GetNumOfContact)
 	}
 
