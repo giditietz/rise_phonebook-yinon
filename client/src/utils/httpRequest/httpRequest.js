@@ -11,6 +11,9 @@ const get = (path) => {
 const post = (path, data) => {
   return axiosInstance.post(path, data);
 };
+const put = (path, data) => {
+  return axiosInstance.put(path, data);
+};
 const del = (path) => {
   return axiosInstance.delete(path);
 };
@@ -18,6 +21,7 @@ const del = (path) => {
 const httpRequest = {
   get,
   post,
+  put,
   del,
 };
 

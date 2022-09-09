@@ -32,6 +32,7 @@ const HomePage = () => {
   const [isShow, setIsShow] = useState(false);
   const [contact, setContact] = useState(undefined);
   const [isNew, setIsNew] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
 
   const resultPerPage = 10;
 
@@ -58,6 +59,7 @@ const HomePage = () => {
 
   const handleEdit = (item) => {
     setContact(item);
+    setIsEdit(true);
     setIsContactFormOpen(true);
   };
 
@@ -65,6 +67,7 @@ const HomePage = () => {
     setIsContactFormOpen(false);
     setIsNew(false);
     setIsShow(false);
+    setIsEdit(false);
     setContact({});
   };
 
@@ -96,6 +99,7 @@ const HomePage = () => {
           contact={contact}
           isShow={isShow}
           isNew={isNew}
+          isEdit={isEdit}
           handleSubmit={() => handleSubmit()}
         />
       </Modal>

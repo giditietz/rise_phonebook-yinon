@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import SaveIcon from "@mui/icons-material/Save";
 import Button from "@mui/material/Button";
@@ -12,7 +12,7 @@ import httpRequest from "../../utils/httpRequest/httpRequest";
 import text from "../../utils/language/text.json";
 import "./contact-form.scss";
 
-const ContactForm = ({ contact, isShow, isNew, handleSubmit }) => {
+const ContactForm = ({ contact, isShow, isNew, isEdit, handleSubmit }) => {
   const [firstName, setFirstName] = useState(isNew ? "" : contact?.firstName);
   const [lastName, setLastName] = useState(isNew ? "" : contact?.lastName);
   const [phones, setPhones] = useState(
@@ -31,6 +31,33 @@ const ContactForm = ({ contact, isShow, isNew, handleSubmit }) => {
         ]
       : contact?.address
   );
+
+  const setEditArray = () => {
+    if (isEdit) {
+      let editAddresses = [];
+      if (addresses) {
+        editAddresses = [...addresses];
+      }
+      editAddresses.push({
+        description: "",
+        city: "",
+        street: "",
+        home_number: "",
+        apartment: "",
+      });
+      setAddresses(editAddresses);
+      let editPhones = [];
+      if (phones) {
+        editPhones = [...phones];
+      }
+      editPhones.push({ description: "", phone_number: "" });
+      setPhones(editPhones);
+    }
+  };
+
+  useEffect(() => {
+    setEditArray();
+  }, [contact]);
 
   const onPhoneSave = (description, phoneNumber, index) => {
     const newPhone = { ...phones[index] };
@@ -92,8 +119,11 @@ const ContactForm = ({ contact, isShow, isNew, handleSubmit }) => {
       address: addresses,
       phone: phones,
     };
-
-    httpRequest.post("/contacts", newContact);
+    if (isEdit) {
+      httpRequest.put(`/contacts/${contact.contactID}`, newContact);
+    } else {
+      httpRequest.post("/contacts", newContact);
+    }
     handleSubmit();
   };
 
@@ -113,9 +143,11 @@ const ContactForm = ({ contact, isShow, isNew, handleSubmit }) => {
           onChange={setLastName}
         />
       </div>
-      {phones.length ? <h1 className="add-content">{text.addPhones}</h1> : null}
-      {phones.length
-        ? phones.map((phone, index) => (
+      {phones?.length ? (
+        <h1 className="add-content">{text.addPhones}</h1>
+      ) : null}
+      {phones?.length
+        ? phones?.map((phone, index) => (
             <PhoneRow
               key={`${phone.description}${index}`}
               descriptionValue={phone.description}
@@ -126,10 +158,10 @@ const ContactForm = ({ contact, isShow, isNew, handleSubmit }) => {
             />
           ))
         : null}
-      {addresses.length ? (
+      {addresses?.length ? (
         <h1 className="add-content">{text.addAddress}</h1>
       ) : null}
-      {addresses.length
+      {addresses?.length
         ? addresses.map((address, index) => (
             <AddressRow
               isSave={!isShow}
