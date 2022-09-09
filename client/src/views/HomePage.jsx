@@ -7,6 +7,7 @@ import Modal from "react-modal";
 
 import "./home-page.scss";
 import httpRequest from "../utils/httpRequest/httpRequest";
+import SearchRow from "./SearchRow/SearchRow";
 
 const customStyles = {
   content: {
@@ -25,8 +26,8 @@ const HomePage = () => {
   const [page, setPage] = useState(1);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [contactNum, setContactNum] = useState(0);
-  const [firstNameSearchParam, setFirstNameSearchParam] = useState("");
   const [lastNameSearchParam, setLastNameSearchParam] = useState("");
+  const [firstNameSearchParam, setFirstNameSearchParam] = useState("");
   const [data, setData] = useState([]);
 
   const resultPerPage = 10;
@@ -46,7 +47,7 @@ const HomePage = () => {
 
   useEffect(() => {
     getData();
-  }, [page]);
+  }, [page, firstNameSearchParam, lastNameSearchParam]);
 
   const getNumOfPage = () => {
     return Math.ceil(contactNum / resultPerPage);
@@ -62,6 +63,12 @@ const HomePage = () => {
         <AddForm />
       </Modal>
       <div className="home-page-container">
+        <SearchRow
+          firstName={firstNameSearchParam}
+          setFirstName={setFirstNameSearchParam}
+          lastName={lastNameSearchParam}
+          setLastName={setLastNameSearchParam}
+        />
         <ContactList data={data} getData={() => getData()} />
         <HomePageFooter
           numOfPages={getNumOfPage()}
