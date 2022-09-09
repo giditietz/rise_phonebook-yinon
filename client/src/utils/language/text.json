@@ -8,6 +8,7 @@
     "Last name",
     "Phone number",
     "Address",
+    "Show more",
     "Delete",
     "Edit"
   ],
@@ -16,8 +17,8 @@
     "Description",
     "City",
     "Street",
-    "Apartment",
-    "Home Number"
+    "Home Number",
+    "Apartment"
   ],
   "addContact": "Add new contact",
   "save": "Save",
@@ -28,5 +29,7 @@
   "homeNumber": "Home number",
   "apartment": "Apartment",
   "submit": "Submit",
-  "delete": "Delete"
+  "delete": "Delete",
+  "edit": "Edit",
+  "showMore": "show More"
 }

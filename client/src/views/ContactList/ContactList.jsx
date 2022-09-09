@@ -1,5 +1,3 @@
-import { useState, useEffect } from "react";
-
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -8,6 +6,8 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import Button from "@mui/material/Button";
 
 import httpRequest from "../../utils/httpRequest/httpRequest";
@@ -16,10 +16,11 @@ import "./contact-list.scss";
 
 import text from "../../utils/language/text.json";
 
-const ContactList = ({ data, getData }) => {
+const ContactList = ({ data, getData, onEdit, onShow }) => {
   const getColSpan = {
     "First name": 1,
     "Last name": 1,
+    "Show more": 1,
     "Phone number": 2,
     Address: 5,
     Delete: 1,
@@ -28,6 +29,7 @@ const ContactList = ({ data, getData }) => {
   const getRowSpan = {
     "First name": 2,
     "Last name": 2,
+    "Show more": 2,
     "Phone number": 1,
     Address: 1,
     Delete: 2,
@@ -76,10 +78,7 @@ const ContactList = ({ data, getData }) => {
           </TableHead>
           <TableBody>
             {data?.map((item) => (
-              <TableRow
-                key={item?.contactID}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
+              <TableRow key={item?.contactID}>
                 <TableCell sx={{ border: "1px solid #c4c4c4" }} align="center">
                   {item?.firstName}
                 </TableCell>
@@ -111,10 +110,33 @@ const ContactList = ({ data, getData }) => {
                   <Button
                     style={{ textTransform: "none" }}
                     variant="contained"
+                    color="success"
+                    startIcon={<VisibilityIcon />}
+                    onClick={() => onShow(item)}
+                  >
+                    {text.showMore}
+                  </Button>
+                </TableCell>
+                <TableCell sx={{ border: "1px solid #c4c4c4" }} align="center">
+                  <Button
+                    style={{ textTransform: "none" }}
+                    variant="contained"
+                    color="error"
                     startIcon={<DeleteIcon />}
                     onClick={() => onDelete(item)}
                   >
                     {text.delete}
+                  </Button>
+                </TableCell>
+                <TableCell sx={{ border: "1px solid #c4c4c4" }} align="center">
+                  <Button
+                    style={{ textTransform: "none" }}
+                    variant="contained"
+                    color="info"
+                    startIcon={<EditIcon />}
+                    onClick={() => onEdit(item)}
+                  >
+                    {text.edit}
                   </Button>
                 </TableCell>
               </TableRow>

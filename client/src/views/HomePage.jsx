@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import AddForm from "./AddForm/AddForm";
+import ContactForm from "./ContactForm/ContactForm";
 import ContactList from "./ContactList/ContactList";
 import HomePageFooter from "./HomePageFooter/HomePageFooter";
 import Modal from "react-modal";
@@ -24,11 +24,14 @@ const customStyles = {
 
 const HomePage = () => {
   const [page, setPage] = useState(1);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isContactFormOpen, setIsContactFormOpen] = useState(false);
   const [contactNum, setContactNum] = useState(0);
   const [lastNameSearchParam, setLastNameSearchParam] = useState("");
   const [firstNameSearchParam, setFirstNameSearchParam] = useState("");
   const [data, setData] = useState([]);
+  const [isShow, setIsShow] = useState(false);
+  const [contact, setContact] = useState(undefined);
+  const [isNew, setIsNew] = useState(false);
 
   const resultPerPage = 10;
 
@@ -47,20 +50,54 @@ const HomePage = () => {
 
   useEffect(() => {
     getData();
-  }, [page, firstNameSearchParam, lastNameSearchParam]);
+  }, [page, firstNameSearchParam, lastNameSearchParam, isNew]);
 
   const getNumOfPage = () => {
     return Math.ceil(contactNum / resultPerPage);
   };
 
+  const handleEdit = (item) => {
+    setContact(item);
+    setIsContactFormOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsContactFormOpen(false);
+    setIsNew(false);
+    setIsShow(false);
+    setContact({});
+  };
+
+  const handleSubmit = () => {
+    setIsContactFormOpen(false);
+    setIsNew(false);
+    getData();
+  };
+
+  const handleAddContact = () => {
+    setIsContactFormOpen(true);
+    setIsNew(true);
+  };
+
+  const handleShow = (item) => {
+    setIsContactFormOpen(true);
+    setIsShow(true);
+    setContact(item);
+  };
+
   return (
     <>
       <Modal
-        isOpen={isAddModalOpen}
-        onRequestClose={() => setIsAddModalOpen(false)}
+        isOpen={isContactFormOpen}
+        onRequestClose={() => handleModalClose()}
         style={customStyles}
       >
-        <AddForm />
+        <ContactForm
+          contact={contact}
+          isShow={isShow}
+          isNew={isNew}
+          handleSubmit={() => handleSubmit()}
+        />
       </Modal>
       <div className="home-page-container">
         <SearchRow
@@ -69,12 +106,17 @@ const HomePage = () => {
           lastName={lastNameSearchParam}
           setLastName={setLastNameSearchParam}
         />
-        <ContactList data={data} getData={() => getData()} />
+        <ContactList
+          onShow={handleShow}
+          data={data}
+          getData={() => getData()}
+          onEdit={handleEdit}
+        />
         <HomePageFooter
           numOfPages={getNumOfPage()}
           page={page}
           setPage={setPage}
-          onAddClick={() => setIsAddModalOpen(true)}
+          onAddClick={() => handleAddContact()}
         />
       </div>
     </>

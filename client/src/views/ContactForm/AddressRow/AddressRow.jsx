@@ -15,6 +15,7 @@ const AddressRow = ({
   apartmentValue,
   index,
   onAddressSave,
+  isSave,
 }) => {
   const [description, setDescription] = useState(descriptionValue);
   const [city, setCity] = useState(cityValue);
@@ -28,7 +29,6 @@ const AddressRow = ({
 
   return (
     <>
-      {" "}
       <div className="address-container">
         <FormField
           title={text.description}
@@ -49,14 +49,16 @@ const AddressRow = ({
           value={apartment}
           onChange={setApartment}
         />
-        <Button
-          onClick={onSave}
-          style={{ textTransform: "none" }}
-          variant="contained"
-          startIcon={<SaveIcon />}
-        >
-          {text.save}
-        </Button>
+        {isSave ? (
+          <Button
+            onClick={onSave}
+            style={{ textTransform: "none" }}
+            variant="contained"
+            startIcon={<SaveIcon />}
+          >
+            {text.save}
+          </Button>
+        ) : null}
       </div>
     </>
   );

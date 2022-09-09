@@ -11,6 +11,7 @@ const PhoneRow = ({
   descriptionValue,
   phoneNumberValue,
   onPhoneSave,
+  isSave,
   index,
 }) => {
   const [description, setDescription] = useState(descriptionValue);
@@ -32,14 +33,16 @@ const PhoneRow = ({
         value={phoneNumber}
         onChange={setPhoneNumber}
       />
-      <Button
-        onClick={onSave}
-        style={{ textTransform: "none" }}
-        variant="contained"
-        startIcon={<SaveIcon />}
-      >
-        {text.save}
-      </Button>
+      {isSave ? (
+        <Button
+          onClick={onSave}
+          style={{ textTransform: "none" }}
+          variant="contained"
+          startIcon={<SaveIcon />}
+        >
+          {text.save}
+        </Button>
+      ) : null}
     </div>
   );
 };
