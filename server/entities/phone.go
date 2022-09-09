@@ -4,7 +4,7 @@ type PhoneQuery struct {
 	PhoneID     int    `json:"phoneID"`
 	ContactID   int    `json:"contactID"`
 	Description string `json:"description"`
-	PhoneNumber string `json:"PhoneNumber" binding:"iso3166_1_alpha2"`
+	PhoneNumber string `json:"PhoneNumber"`
 }
 
 type PhoneRequestBody struct {
