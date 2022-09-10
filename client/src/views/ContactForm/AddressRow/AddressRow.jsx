@@ -1,11 +1,13 @@
 import { useState } from "react";
 import SaveIcon from "@mui/icons-material/Save";
+import DeleteIcon from "@mui/icons-material/Delete";
 import Button from "@mui/material/Button";
 import FormField from "../../../components/FormField";
 
 import text from "../../../utils/language/text.json";
 
 import "./address-row.scss";
+import httpRequest from "../../../utils/httpRequest/httpRequest";
 
 const AddressRow = ({
   descriptionValue,
@@ -15,6 +17,8 @@ const AddressRow = ({
   apartmentValue,
   index,
   onAddressSave,
+  onAddressDelete,
+  addressID,
   isSave,
 }) => {
   const [description, setDescription] = useState(descriptionValue);
@@ -25,6 +29,11 @@ const AddressRow = ({
 
   const onSave = () => {
     onAddressSave(description, city, street, homeNumber, apartment, index);
+  };
+
+  const onDelete = () => {
+    httpRequest.del(`/contacts/address/${addressID}`);
+    onAddressDelete(addressID);
   };
 
   return (
@@ -57,6 +66,17 @@ const AddressRow = ({
             startIcon={<SaveIcon />}
           >
             {text.save}
+          </Button>
+        ) : null}
+        {isSave ? (
+          <Button
+            onClick={onDelete}
+            style={{ textTransform: "none" }}
+            variant="contained"
+            color="error"
+            startIcon={<DeleteIcon />}
+          >
+            {text.delete}
           </Button>
         ) : null}
       </div>

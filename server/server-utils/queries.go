@@ -22,14 +22,17 @@ var queryMap = map[string]string{
 		) 
 		VALUES (?, ?, ?, ?, ?, ?)`,
 	"editAddress":      `UPDATE addresses SET `,
+	"deleteAddress":    `DELETE FROM addresses WHERE address_id = ? `,
 	"getContactPhones": `SELECT * FROM phones WHERE contact_id = ?`,
 	"insertPhone": `INSERT INTO phones(
-					contact_id, 
-					description, 
-					phone_number
-					) 
-					VALUES (?, ?, ?)`,
-	"editPhone": `UPDATE phones SET `,
+		contact_id, 
+		description, 
+		phone_number
+		) 
+		VALUES (?, ?, ?)`,
+	"editPhone":   `UPDATE phones SET `,
+	"deletePhone": `DELETE FROM phones WHERE phone_id = ? `,
+
 	"getNumOfContacts": `SELECT 
 						 COUNT(contact_id)
 						 FROM contacts`,

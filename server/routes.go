@@ -18,6 +18,8 @@ func InitRoutes() {
 		api.DELETE("/contacts/:id", DeleteContact)
 		api.PUT("/contacts/:id", EditContact)
 		api.GET("/contacts/contact-num", GetNumOfContact)
+		api.DELETE("/contacts/address/:id", DeleteAddress)
+		api.DELETE("/contacts/phone/:id", DeletePhone)
 	}
 
 	server.Run("0.0.0.0:9000")

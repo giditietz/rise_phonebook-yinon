@@ -3,6 +3,9 @@ package controller
 import (
 	"phonebook/server/entities"
 	"phonebook/server/service"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 type PhoneController interface {
@@ -10,6 +13,7 @@ type PhoneController interface {
 	SaveBulk(contactID int, phones []entities.PhoneRequestBody) error
 	Save(contactID int, phone *entities.PhoneRequestBody) error
 	Edit(phone *entities.PhoneRequestBody) error
+	Delete(c *gin.Context) error
 }
 
 type phoneController struct {
@@ -36,4 +40,13 @@ func (controller *phoneController) Save(contactID int, phone *entities.PhoneRequ
 
 func (controller *phoneController) Edit(phone *entities.PhoneRequestBody) error {
 	return controller.service.Edit(phone)
+}
+
+func (controller *phoneController) Delete(c *gin.Context) error {
+	phoneID, err := strconv.Atoi(c.Param(ginParamId))
+	if err != nil {
+		return err
+	}
+
+	return controller.service.Delete(phoneID)
 }

@@ -14,6 +14,8 @@ const (
 	sqlQueryGetContactPhones  = "getContactPhones"
 	sqlQueryEditPhone         = "editPhone"
 	sqlQueryEditAddress       = "editAddress"
+	sqlQueryDeleteAddress     = "deleteAddress"
+	sqlQueryDeletePhone       = "deletePhone"
 	sqlQueryGetNumOfContacts  = "getNumOfContacts"
 	sqlQueryRegex             = "regex"
 	sqlSeparatorValues        = ", "

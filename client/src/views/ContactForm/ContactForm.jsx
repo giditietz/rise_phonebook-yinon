@@ -32,6 +32,8 @@ const ContactForm = ({ contact, isShow, isNew, isEdit, handleSubmit }) => {
       : contact?.address
   );
 
+  console.log(phones);
+
   const setEditArray = () => {
     if (isEdit) {
       let editAddresses = [];
@@ -74,6 +76,12 @@ const ContactForm = ({ contact, isShow, isNew, isEdit, handleSubmit }) => {
     setPhones(newPhoneArray);
   };
 
+  const onPhoneDelete = (phoneID) => {
+    const newPhones = [...phones];
+    const filteredPhones = newPhones.filter((item) => item.PhoneID !== phoneID);
+    setPhones(filteredPhones);
+  };
+
   const onAddressSave = (
     description,
     city,
@@ -103,6 +111,14 @@ const ContactForm = ({ contact, isShow, isNew, isEdit, handleSubmit }) => {
       });
     }
     setAddresses(newAddressArray);
+  };
+
+  const onAddressDelete = (addressID) => {
+    const newAddresses = [...addresses];
+    const filteredAddresses = newAddresses.filter(
+      (item) => item.AddressID !== addressID
+    );
+    setAddresses(filteredAddresses);
   };
 
   const onSubmit = () => {
@@ -159,6 +175,8 @@ const ContactForm = ({ contact, isShow, isNew, isEdit, handleSubmit }) => {
               onPhoneSave={onPhoneSave}
               index={index}
               isSave={!isShow}
+              phoneID={phone.PhoneID}
+              onPhoneDelete={onPhoneDelete}
             />
           ))
         : null}
@@ -181,6 +199,8 @@ const ContactForm = ({ contact, isShow, isNew, isEdit, handleSubmit }) => {
               apartmentValue={address.apartment}
               index={index}
               onAddressSave={onAddressSave}
+              addressID={address.AddressID}
+              onAddressDelete={onAddressDelete}
             />
           ))
         : null}

@@ -8,10 +8,11 @@ import (
 )
 
 type AddressService interface {
-	FindContactAddresses(contactId int) ([]entities.AddressResponseBody, error)
+	FindContactAddresses(contactId int) ([]entities.AddressQuery, error)
 	SaveBulk(contactID int, addresses []entities.AddressRequestBody) error
 	Save(contactID int, address *entities.AddressRequestBody) error
 	Edit(address *entities.AddressRequestBody) error
+	Delete(addressID int) error
 }
 
 type addressService struct {
@@ -139,4 +140,20 @@ func prepareAddressUpdateQuery(address *entities.AddressRequestBody) (string, er
 	}
 
 	return ret, nil
+}
+
+func (addressService *addressService) Delete(addressID int) error {
+	db := setup.GetDBConn()
+
+	deleteAddressQuery, err := serverutils.GetQuery(sqlQueryDeleteAddress)
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec(deleteAddressQuery, addressID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

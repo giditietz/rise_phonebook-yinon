@@ -1,7 +1,10 @@
 import { useState } from "react";
 import SaveIcon from "@mui/icons-material/Save";
+import DeleteIcon from "@mui/icons-material/Delete";
 import Button from "@mui/material/Button";
 import FormField from "../../../components/FormField";
+
+import httpRequest from "../../../utils/httpRequest/httpRequest";
 
 import text from "../../../utils/language/text.json";
 
@@ -12,6 +15,8 @@ const PhoneRow = ({
   phoneNumberValue,
   onPhoneSave,
   isSave,
+  onPhoneDelete,
+  phoneID,
   index,
 }) => {
   const [description, setDescription] = useState(descriptionValue);
@@ -19,6 +24,11 @@ const PhoneRow = ({
 
   const onSave = () => {
     onPhoneSave(description, phoneNumber, index);
+  };
+
+  const onDelete = () => {
+    httpRequest.del(`/contacts/phone/${phoneID}`);
+    onPhoneDelete(phoneID);
   };
 
   return (
@@ -41,6 +51,17 @@ const PhoneRow = ({
           startIcon={<SaveIcon />}
         >
           {text.save}
+        </Button>
+      ) : null}
+      {isSave ? (
+        <Button
+          onClick={onDelete}
+          style={{ textTransform: "none" }}
+          variant="contained"
+          color="error"
+          startIcon={<DeleteIcon />}
+        >
+          {text.delete}
         </Button>
       ) : null}
     </div>

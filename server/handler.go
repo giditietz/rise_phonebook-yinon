@@ -11,6 +11,10 @@ import (
 var (
 	contactService    service.ContactService       = service.NewContactService()
 	contactController controller.ContactController = controller.NewContactController(contactService)
+	addressService    service.AddressService       = service.NewAddressService()
+	addressController controller.AddressController = controller.NewAddressController(addressService)
+	phoneService      service.PhoneService         = service.NewPhoneService()
+	phoneController   controller.PhoneController   = controller.NewPhoneController(phoneService)
 )
 
 func GetAllContacts(c *gin.Context) {
@@ -67,4 +71,22 @@ func GetNumOfContact(c *gin.Context) {
 		return
 	}
 	c.IndentedJSON(http.StatusOK, contactsNum)
+}
+
+func DeleteAddress(c *gin.Context) {
+	err := addressController.Delete(c)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, err)
+		return
+	}
+	c.IndentedJSON(http.StatusOK, nil)
+}
+
+func DeletePhone(c *gin.Context) {
+	err := phoneController.Delete(c)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, err)
+		return
+	}
+	c.IndentedJSON(http.StatusOK, nil)
 }

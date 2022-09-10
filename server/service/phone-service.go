@@ -12,6 +12,7 @@ type PhoneService interface {
 	SaveBulk(contactID int, phones []entities.PhoneRequestBody) error
 	Save(contactID int, phone *entities.PhoneRequestBody) error
 	Edit(phone *entities.PhoneRequestBody) error
+	Delete(phoneID int) error
 }
 
 type phoneService struct {
@@ -110,4 +111,20 @@ func preparePhoneUpdateQuery(phone *entities.PhoneRequestBody) (string, error) {
 		isSeparatorNeeded = true
 	}
 	return ret, nil
+}
+
+func (phoneService *phoneService) Delete(phoneID int) error {
+	db := setup.GetDBConn()
+
+	deletePhoneQuery, err := serverutils.GetQuery(sqlQueryDeletePhone)
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec(deletePhoneQuery, phoneID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
