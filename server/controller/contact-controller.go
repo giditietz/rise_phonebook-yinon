@@ -21,16 +21,6 @@ type contactController struct {
 	service service.ContactService
 }
 
-const (
-	queryErrorString = "query not exist"
-)
-
-type QueryError struct{}
-
-func (queryError *QueryError) Error() string {
-	return queryErrorString
-}
-
 func NewContactController(service service.ContactService) ContactController {
 	return &contactController{
 		service: service,

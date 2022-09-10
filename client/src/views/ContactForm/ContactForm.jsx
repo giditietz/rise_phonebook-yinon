@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import SaveIcon from "@mui/icons-material/Save";
+import SendIcon from "@mui/icons-material/Send";
 import Button from "@mui/material/Button";
 
 import FormField from "../../components/FormField";
@@ -189,7 +189,8 @@ const ContactForm = ({ contact, isShow, isNew, isEdit, handleSubmit }) => {
           onClick={onSubmit}
           style={{ textTransform: "none", width: "60%", left: "20%" }}
           variant="contained"
-          startIcon={<SaveIcon />}
+          color="success"
+          startIcon={<SendIcon />}
         >
           {text.submit}
         </Button>
