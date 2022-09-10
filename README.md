@@ -1,12 +1,12 @@
 # Rise Phonebook
 
-This is a project to save your contact inside web app.
-Server written in Go lang and the Client in JS using react.
+This is a project to save your contact inside a web app.
+The server is written in Go lang and the Client in reactJS.
 
 prerequisites:
 
 - docker-compose version 1.27+.
-- ports 3306, 9000, 3000 available for docker use.
+- ports 3306, 9000, and 3000 are available for docker use.
 
 To run the project install docker-compose and from the home directory run:
 
@@ -14,8 +14,8 @@ To run the project install docker-compose and from the home directory run:
 docker-compose up
 ```
 
-Now you can see the client at address: http://localhost:3000
-The server is running on: http://localhost:9000
+Now you can see the client at the address: http://localhost:3000
+The server is running on the address: http://localhost:9000
 
 The following are the routes to get and modify data directly in the server:
 Address example:
@@ -26,9 +26,9 @@ http://localhost:9000/api/contact
 
 ## Get data from the server
 
-#### All the URL in this section using http GET method
+#### All the URLs in this section using HTTP GET method
 
-To get list of contacts send GET request to the url:
+To get list of contacts use the following URL:
 
 ```
 http://localhost:9000/api/contacts
@@ -47,15 +47,15 @@ To get the next ten contacts we should modify the page number in the query URL:
 http://localhost:9000/api/contacts?page=1
 ```
 
-In order to do search in the contact list, we can add more params in the query
+To search in your contact list, we can add more params in the query
 (currently supporting first name and last name).
-Let's say we want to see all the contact who have y in their in the first name.
+Let's say we want to see all the contact who have y in their first name.
 
 ```
 http://localhost:9000/api/contacts?first_name=y
 ```
 
-If we want to see all the contacts who have y in their in the last name.
+If we want to see all the contacts who have y in their last name.
 
 ```
 http://localhost:9000/api/contacts?last_name=y
@@ -67,7 +67,7 @@ To see all the contacts with y in their first name and y in their last name:
 http://localhost:9000/api/contacts?last_name=y&first_name=y
 ```
 
-If the search result contain more than 10 contacts we can add the a page param to the url query to see all the contacts in the result.
+If the search results contain more than 10 contacts we can add the a page param to the URL query to see the next 10 contacts in the result.
 
 ```
 http://localhost:9000/api/contacts?page=1&last_name=y&first_name=y
@@ -75,9 +75,9 @@ http://localhost:9000/api/contacts?page=1&last_name=y&first_name=y
 
 ## Add data to the server
 
-#### All the URL in this section using http POST method
+#### All the URL in this section using HTTP POST method
 
-To add a new contact we should use the POST method and send it to the following URL:
+To add a new contact we use the following URL:
 
 ```
 http://localhost:9000/api/contacts
@@ -136,9 +136,9 @@ curl -X POST -d '{"first_name":"aaa","last_name":"dddd","address":[{"description
 
 ## Delete data in the server
 
-#### All the URL in this section using http DELETE method
+#### All the URL in this section using HTTP DELETE method
 
-To delete contact we should send DELETE request:
+To delete contact we use the following URL:
 
 ```
 http://localhost:9000/api/contacts/:id
@@ -158,7 +158,7 @@ curl -X DELETE http://localhost:9000/api/contacts/1
 
 ## Update data in the server
 
-#### All the URL in this section using http PUT method
+#### All the URL in this section using HTTP PUT method
 
 we can modify every field in the contact but first name and last name must have content
 
