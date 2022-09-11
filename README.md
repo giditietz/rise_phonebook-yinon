@@ -8,7 +8,7 @@ prerequisites:
 - docker-compose version 1.27+.
 - ports 3306, 9000, and 3000 are available for docker use.
 
-To run the project install docker-compose and from the home directory run:
+To run the project use the following command from the project home directory(phonebook):
 
 ```bash
 docker-compose up
@@ -17,8 +17,8 @@ docker-compose up
 Now you can see the client at the address: http://localhost:3000
 The server is running on the address: http://localhost:9000
 
-The following are the routes to get and modify data directly in the server:
-Address example:
+The following are the APIs to get, modify, and delete data:
+URL example:
 
 ```
 http://localhost:9000/api/contact
@@ -40,22 +40,22 @@ this is equivalent to:
 http://localhost:9000/api/contacts?page=0
 ```
 
-this will return the 10 first contacts.  
-To get the next ten contacts we should modify the page number in the query URL:
+This will return the 10 first contacts (sorted by ID).  
+To get the next ten contacts modify the page number in the URL query:
 
 ```
 http://localhost:9000/api/contacts?page=1
 ```
 
-To search in your contact list, we can add more params in the query
-(currently supporting first name and last name).
-Let's say we want to see all the contact who have y in their first name.
+To search in your contact list, add more params in the URL query
+(currently supporting first name and last name search).
+To get all the contact who have y in their first name.
 
 ```
 http://localhost:9000/api/contacts?first_name=y
 ```
 
-If we want to see all the contacts who have y in their last name.
+To get all the contacts who have y in their last name.
 
 ```
 http://localhost:9000/api/contacts?last_name=y
@@ -67,7 +67,7 @@ To see all the contacts with y in their first name and y in their last name:
 http://localhost:9000/api/contacts?last_name=y&first_name=y
 ```
 
-If the search results contain more than 10 contacts we can add the a page param to the URL query to see the next 10 contacts in the result.
+If the search results contain more than 10 contacts, add the a page param to the URL query.
 
 ```
 http://localhost:9000/api/contacts?page=1&last_name=y&first_name=y
@@ -77,13 +77,13 @@ http://localhost:9000/api/contacts?page=1&last_name=y&first_name=y
 
 #### All the URL in this section using HTTP POST method
 
-To add a new contact we use the following URL:
+To add a new contact use the following URL:
 
 ```
 http://localhost:9000/api/contacts
 ```
 
-Together with the request we should send a payload JSON object of the new contact.
+Together with the POST request a payload of JSON object for the new contact need to be attached at the request body.
 
 This is an example for a valid JSON object to create new contact:
 
@@ -131,20 +131,20 @@ The phone object contain:
 A curl request to create new contact:
 
 ```bash
-curl -X POST -d '{"first_name":"aaa","last_name":"dddd","address":[{"description":"ads","city":"adfs","street":"afds","home_number":"12","apartment":"12"}],"phone":[{"description":"dddd","phone_number":"123456789"}]}' http://localhost:9000/api/contacts
+curl -X POST -d '{"first_name":"The","last_name":"New","address":[{"description":"Guy","city":"Lol","street":"Lola","home_number":"12","apartment":"12"}],"phone":[{"description":"Mobile","phone_number":"123456789"}]}' http://localhost:9000/api/contacts
 ```
 
 ## Delete data in the server
 
 #### All the URL in this section using HTTP DELETE method
 
-To delete contact we use the following URL:
+To delete contact use the following URL:
 
 ```
 http://localhost:9000/api/contacts/:id
 ```
 
-for example to delete the contact with ID 1:
+For example to delete the contact with ID 1:
 
 ```
 http://localhost:9000/api/contacts/1
@@ -156,11 +156,47 @@ curl command example:
 curl -X DELETE http://localhost:9000/api/contacts/1
 ```
 
+To delete address use the following URL:
+
+```
+http://localhost:9000/api/address/:id
+```
+
+For example to delete the address with ID 1:
+
+```
+http://localhost:9000/api/address/1
+```
+
+curl command example:
+
+```bash
+curl -X DELETE http://localhost:9000/api/address/1
+```
+
+To delete phone use the following URL:
+
+```
+http://localhost:9000/api/phone/:id
+```
+
+For example to delete the phone with ID 1:
+
+```
+http://localhost:9000/api/phone/1
+```
+
+curl command example:
+
+```bash
+curl -X DELETE http://localhost:9000/api/phone/1
+```
+
 ## Update data in the server
 
 #### All the URL in this section using HTTP PUT method
 
-we can modify every field in the contact but first name and last name must have content
+Contact can modify every field in it but first name and last name cannot be NULL.
 
 ```JSON
 {

@@ -32,7 +32,9 @@ const AddressRow = ({
   };
 
   const onDelete = () => {
-    httpRequest.del(`/contacts/address/${addressID}`);
+    if (addressID) {
+      httpRequest.del(`/contacts/address/${addressID}`);
+    }
     onAddressDelete(addressID);
   };
 
@@ -68,7 +70,7 @@ const AddressRow = ({
             {text.save}
           </Button>
         ) : null}
-        {isSave ? (
+        {isSave && city !== "" ? (
           <Button
             onClick={onDelete}
             style={{ textTransform: "none" }}

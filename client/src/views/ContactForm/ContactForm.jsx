@@ -79,6 +79,9 @@ const ContactForm = ({ contact, isShow, isNew, isEdit, handleSubmit }) => {
   const onPhoneDelete = (phoneID) => {
     const newPhones = [...phones];
     const filteredPhones = newPhones.filter((item) => item.PhoneID !== phoneID);
+    if (filteredPhones.length === 0) {
+      filteredPhones.push({ description: "", phone_number: "" });
+    }
     setPhones(filteredPhones);
   };
 
@@ -118,6 +121,15 @@ const ContactForm = ({ contact, isShow, isNew, isEdit, handleSubmit }) => {
     const filteredAddresses = newAddresses.filter(
       (item) => item.AddressID !== addressID
     );
+    if (filteredAddresses.length === 0) {
+      filteredAddresses.push({
+        description: "",
+        city: "",
+        street: "",
+        home_number: "",
+        apartment: "",
+      });
+    }
     setAddresses(filteredAddresses);
   };
 

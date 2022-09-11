@@ -27,7 +27,9 @@ const PhoneRow = ({
   };
 
   const onDelete = () => {
-    httpRequest.del(`/contacts/phone/${phoneID}`);
+    if (phoneID) {
+      httpRequest.del(`/contacts/phone/${phoneID}`);
+    }
     onPhoneDelete(phoneID);
   };
 
@@ -53,7 +55,7 @@ const PhoneRow = ({
           {text.save}
         </Button>
       ) : null}
-      {isSave ? (
+      {isSave && phoneNumber !== "" ? (
         <Button
           onClick={onDelete}
           style={{ textTransform: "none" }}
